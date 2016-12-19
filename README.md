@@ -6,7 +6,7 @@ WAVEPAL is a package, written in python2.X, that performs frequency (WOSA Lomb-S
 
 ## References
 
-The provisional reference for the package is
+The provisional reference for the package is\n
 **G. Lenoir and M. Crucifix.** *Wavepal: A python software for wavelet analysis of irregularly sampled time series.* Poster presentation at the 1st CVAS workshop: What do we know about multicentennial, multimillenial variability?, Guesthouse of the University of Hamburg, November 2016.
 and is available [here](http://www.elic.ucl.ac.be/users/lenoir/mywebsite/docs/poster_CVAS_2016.pdf). Two reference papers are currently under writing. 
 
