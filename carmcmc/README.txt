@@ -1,1 +1,1 @@
-This folder holds modified files of the carma_pack python package (https://github.com/brandonckelly/carma_pack/tree/master/src/carmcmc)
+This folder holds modified files of the carma_pack python package (modified from the original source https://github.com/brandonckelly/carma_pack/tree/master/src/carmcmc)
