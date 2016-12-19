@@ -21,7 +21,7 @@ Ridges filtering is based on functions that I have rewritten from the matlab pac
 
 ## Installation 
 
-Python 2.X and all the dependencies of WAVEPAL are installed. Feel free to modify the installation file. First, you need to download the package on your machine. Then, follow the steps explained below. Installation ends with the message "INSTALLATION COMPLETED SUCCESSFULLY".
+First, you need to download the package on your machine. Then, follow the steps explained below. Installation ends with the message "INSTALLATION COMPLETED SUCCESSFULLY".
 
 ### On Linux (Ubuntu)
 
@@ -30,6 +30,22 @@ Just enter
 sh Linux_install.sh
 ```
 and that is all!
+
+Python 2.X and all the dependencies of WAVEPAL are installed. Feel free to modify the installation file. 
+
+### On MacOSX (tested on MacOS 10.12 Sierra)
+
+You first need to install Macports from [here](https://www.macports.org/install.php). You also need xcodebuild, but this should be installed if you use the [terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) (if not, you will be asked to install it when you first use it). 
+
+Open the [terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) and change directory to the folder containing the file `MacOSX_install.sh` (with command `cd`).
+
+Just enter 
+```
+sh MacOSX_install.sh
+```
+and that is all!
+
+Python 2.7 and all the dependencies of WAVEPAL are installed. Feel free to modify the installation file.
 
 ------------
 

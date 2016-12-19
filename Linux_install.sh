@@ -8,11 +8,7 @@ sudo apt-get install git bison make g++ devscripts g++-multilib cmake python-pip
 ############################
 
 pip install --upgrade pip --user
-
-echo "Install acor"
 pip install acor --user
-
-echo "Install tqdm"
 pip install tqdm --user
 
 echo "Install carma_pack"
