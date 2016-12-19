@@ -1,1 +1,1 @@
-If you do not have the ipython notebook installed on your machine, you can read Quick_start.ipynb on github!
+If you do not have the ipython notebook installed on your machine, you can read the files with the extension « ipynb » on github!
