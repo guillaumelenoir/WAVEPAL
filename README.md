@@ -12,10 +12,10 @@ The provisional reference for the package is
 and is available [here](http://www.elic.ucl.ac.be/users/lenoir/mywebsite/docs/poster_CVAS_2016.pdf). Two reference papers are currently under writing. 
 
 When `WAVEPAL` performs significance testing against a CARMA(p,q) background noise, it calls the python package [carma_pack](https://github.com/brandonckelly/carma_pack) (except when p=q=0: the case of a white noise background is entirely analysed within `WAVEPAL`), whose reference is
-> *B. C. Kelly, A. C. Becker, M. Sobolewska, A. Siemiginowska, and P. Uttley.** *Flexible and scalable methods for quantifying stochastic variability in the era of massive time-domain astronomical data sets.* The Astrophysical Journal, 788(1):33, 2014.
+> **B. C. Kelly, A. C. Becker, M. Sobolewska, A. Siemiginowska, and P. Uttley.** *Flexible and scalable methods for quantifying stochastic variability in the era of massive time-domain astronomical data sets.* The Astrophysical Journal, 788(1):33, 2014.
 
 Ridges filtering is based on functions that I have rewritten from the matlab package [jlab](http://www.jmlilly.net/jmlsoft.html). Main reference is
-> *J. Lilly and S. Olhede.** *On the analytic wavelet transform.* IEEE Transactions on Information Theory, 56(8):4135–4156, aug. 2010.
+> **J. Lilly and S. Olhede.** *On the analytic wavelet transform.* IEEE Transactions on Information Theory, 56(8):4135–4156, aug. 2010.
 
 ---------------
 
@@ -55,11 +55,11 @@ Moreover, carma_pack requires the instatllation of [BOOST](http://www.boost.org)
 
 ## Source Code
 
-All the source code of the WAVEPAL package is provided in the 'wavepal/' folder. The main code is in Wavepal.py, that contains the class 'Wavepal'. However, you should not work directly with those files since you just need to import the package once it is installed (see the examples provided). 
+All the source code of the WAVEPAL package is provided in the `wavepal/` folder. The main code is in `Wavepal.py`, that contains the class `Wavepal`. However, you should not work directly with those files since you just need to import the package once it is installed (see the examples provided). 
 
-The folder 'carmcmc' contains 2 sligthly modified python files from carma_pack, where I only modified some bunch of code related to the figures. 
+The folder `carmcmc/` contains 2 sligthly modified python files from [carma_pack](https://github.com/brandonckelly/carma_pack), where I only modified some bunch of code related to the figures. 
 
-The folder 'wavepal/ridges/' contains functions rewritten from [jlab](http://www.jmlilly.net/jmlsoft.html). They were transformed from matlab to python and strongly modified. 
+The folder `wavepal/ridges/` contains functions rewritten from [jlab](http://www.jmlilly.net/jmlsoft.html). They were transformed from matlab to python and strongly modified. 
 
 ## Acknowledgements
 
