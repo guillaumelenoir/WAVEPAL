@@ -1,6 +1,6 @@
 # WAVEPAL 3.3 python package
 
-WAVEPAL is a package, written in python2.X, that performs frequency (WOSA Lomb-Scargle-based periodogram) and time-frequency (Smoothed Morlet wavelet scalogram, as an extension of the on the Lomb-Scargle periodogram) analyses of irregularly sampled time series with a polynomial trend, **WITHOUT INTERPOLATING** the data. Moreover, it proposes significance testing against a large choice of background processes, i.e. CARMA(p,q) processes. It also provides tools for filtering the signal (band and ridges filtering).
+WAVEPAL is a package, written in python 2.X, that performs frequency and time-frequency analyses of irregularly sampled time series with a polynomial trend, **WITHOUT INTERPOLATING** the data. Frequency analysis is based on the Lomb-Scargle periodogram and WOSA smoothing method. Time-frequency analysis is performed with the smoothed Morlet wavelet scalogram, defined as an extension of the Lomb-Scargle periodogram. Moreover, the package proposes significance testing against a large choice of background processes, i.e. CARMA(p,q) processes. It also provides tools for filtering the signal (band and ridges filtering).
 
 --------------
 
@@ -21,7 +21,7 @@ Ridges filtering is based on functions that I have rewritten from the matlab pac
 
 ## Installation 
 
-First, you need to download the package on your machine. Then, follow the steps explained below. Installation ends with the message "INSTALLATION COMPLETED SUCCESSFULLY".
+First, you need to download the package on your machine (click on "clone or download", download the zip file, and unzip it). Then, follow the steps explained below. Installation ends with the message "INSTALLATION COMPLETED SUCCESSFULLY".
 
 ### On Linux (Ubuntu)
 
@@ -33,11 +33,11 @@ and that is all!
 
 Python 2.X and all the dependencies of WAVEPAL are installed. Feel free to modify the installation file. 
 
-### On MacOSX (tested on MacOS 10.10 Yosemite and 10.12 Sierra)
+### On Mac OS X (tested on Mac OS 10.10 Yosemite and 10.12 Sierra)
 
-You first need to install MacPorts from [this website](https://www.macports.org/install.php). You also need xcodebuild, but this should be installed if you use the [terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) (if not, you will be asked to install it the first time you use it). 
+You first need to install MacPorts from [this website](https://www.macports.org/install.php). You also need xcodebuild, but this should be installed if you use the [terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) (if not, you will be asked to install it the first time you use the terminal). 
 
-Open the [terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) and change directory to the folder containing the file `MacOSX_install.sh` (with command `cd`).
+Open the [terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) and change directory (with command `cd`) to the folder containing the file `MacOSX_install.sh`.
 
 Just enter 
 ```
@@ -62,10 +62,10 @@ WAVEPAL depends on the following python modules:
 * scipy      (for core functionality)
 * matplotlib (for generating plots)
 * acor       (for calculating the autocorrelation time scale of MCMC samples; this is used only by carma_pack)
-* [tqdm](https://pypi.python.org/pypi/tqdm) (make progress meters)
+* [tqdm](https://pypi.python.org/pypi/tqdm) (for progress meters)
 * [carma_pack](https://github.com/brandonckelly/carma_pack) (MCMC sampler for performing Bayesian inference on continuous-ARMA (CARMA) models) 
 
-Moreover, carma_pack requires the instatllation of [BOOST](http://www.boost.org) (for linking python and C++) and [ARMADILLO](http://arma.sourceforge.net) (C++ linear algebra library).
+Moreover, carma_pack requires the installation of [BOOST](http://www.boost.org) (for linking python and C++) and [ARMADILLO](http://arma.sourceforge.net) (C++ linear algebra library).
 
 --------------
 
