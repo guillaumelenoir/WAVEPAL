@@ -1,6 +1,6 @@
 # WAVEPAL 3.3 python package
 
-WAVEPAL is a package, written in python2.X, that performs frequency (WOSA Lomb-Scargle-based periodogram) and time-frequency (Smoothed Morlet wavelet scalogram, as an extension of the on the Lomb-Scargle periodogram) analyses of irregularly sampled time series with a polynomial trend, WITHOUT INTERPOLATING the data. Moreover, it proposes significance testing against a large choice of background processes, i.e. CARMA(p,q) processes. It also provides tools for filtering the signal (band and ridges filtering).
+WAVEPAL is a package, written in python2.X, that performs frequency (WOSA Lomb-Scargle-based periodogram) and time-frequency (Smoothed Morlet wavelet scalogram, as an extension of the on the Lomb-Scargle periodogram) analyses of irregularly sampled time series with a polynomial trend, **WITHOUT INTERPOLATING** the data. Moreover, it proposes significance testing against a large choice of background processes, i.e. CARMA(p,q) processes. It also provides tools for filtering the signal (band and ridges filtering).
 
 --------------
 
