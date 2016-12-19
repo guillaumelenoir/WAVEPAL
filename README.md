@@ -2,12 +2,11 @@
 
 WAVEPAL is a package, written in python2.X, that performs frequency (WOSA Lomb-Scargle-based periodogram) and time-frequency (Smoothed Morlet wavelet scalogram, as an extension of the on the Lomb-Scargle periodogram) analyses of irregularly sampled time series with a polynomial trend, WITHOUT INTERPOLATING the data. Moreover, it proposes significance testing against a large choice of background processes, i.e. CARMA(p,q) processes. It also provides tools for filtering the signal (band and ridges filtering).
 
---------------
 
 ## References
 
-The provisional reference for the package is\n
-**G. Lenoir and M. Crucifix.** *Wavepal: A python software for wavelet analysis of irregularly sampled time series.* Poster presentation at the 1st CVAS workshop: What do we know about multicentennial, multimillenial variability?, Guesthouse of the University of Hamburg, November 2016.
+The provisional reference for the package is
+> **G. Lenoir and M. Crucifix.** *Wavepal: A python software for wavelet analysis of irregularly sampled time series.* Poster presentation at the 1st CVAS workshop: What do we know about multicentennial, multimillenial variability?, Guesthouse of the University of Hamburg, November 2016.
 and is available [here](http://www.elic.ucl.ac.be/users/lenoir/mywebsite/docs/poster_CVAS_2016.pdf). Two reference papers are currently under writing. 
 
 When `WAVEPAL` performs significance testing against a CARMA(p,q) background noise, it calls the python package [carma_pack](https://github.com/brandonckelly/carma_pack) (except when p=q=0: the case of a white noise background is entirely analysed within `WAVEPAL`), whose reference is
