@@ -51,7 +51,7 @@ Python 2.7 and all the dependencies of WAVEPAL are installed. Feel free to modif
 
 ## Examples
 
-See the the file `Quick_start.ipynb` in the `examples/` folder. 
+Open the the file `Quick_start.ipynb` in the `examples/` folder, or click [here](https://github.com/guillaumelenoir/WAVEPAL/blob/master/examples/Quick_start.ipynb)
 
 ---------------
 
