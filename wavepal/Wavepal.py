@@ -76,10 +76,10 @@ class Wavepal:
 		self.run_check_data=False
 		# Defined in function 'plot_timestep'
 		self.dt=None
-		# Defined in function 'choose_trend_order'
-		self.pol_order=None
+		# Defined in function 'choose_trend_degree'
+		self.pol_degree=None
 		self.trend=None
-		self.run_choose_trend_order=False
+		self.run_choose_trend_degree=False
 		# Defined in function 'carma_params'
 		self.p=None
 		self.q=None
@@ -291,11 +291,11 @@ class Wavepal:
 
 
 
-	def plot_trend(self,pol_order,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,fontsize_legend='small',linewidth_data=1.0,linewidth_trend=2.0):
+	def plot_trend(self,pol_degree,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,fontsize_legend='small',linewidth_data=1.0,linewidth_trend=2.0):
 	
 		""" plot_trend computes and generates the figure the polynomial trend of the time series.
 			Required Inputs:
-			- pol_order [int]: the order of the polynomial trend. pol_order=-1 means no trend (trend is imposed to zero). pol_order=0 means trend=constant=data average. pol_order=1 means linear detrending (trend=a*t+b). etc.
+			- pol_degree [int]: the degree of the polynomial trend. pol_degree=-1 means no trend (trend is imposed to zero). pol_degree=0 means trend=constant=data average. pol_degree=1 means linear detrending (trend=a*t+b). etc.
 			Optional Inputs:
 			- fontsize_title=14: fontsize for the figure title.
 			- fontsize_axes=12: fontsize for the figure axes.
@@ -317,9 +317,9 @@ class Wavepal:
 		
 		# check inputs
 		try:
-			assert (type(pol_order) is int) and pol_order>=-1
+			assert (type(pol_degree) is int) and pol_degree>=-1
 		except AssertionError:
-			print "Error at input 'pol_order': must be an integer >= -1"
+			print "Error at input 'pol_degree': must be an integer >= -1"
 			return
 		try:
 			assert (type(linewidth_data) is int) or (type(linewidth_data) is float)
@@ -337,7 +337,7 @@ class Wavepal:
 		except AssertionError:
 			print "Error: Must have run function 'check_data'"
 			return
-		trend=detrending(self.t,self.mydata,pol_order)
+		trend=detrending(self.t,self.mydata,pol_degree)
 		# Figure with: raw data + trend
 		plt.plot(self.t,self.mydata,"b",label="Data",linewidth=linewidth_data)
 		plt.plot(self.t,trend,"r",label="Trend",linewidth=linewidth_trend)
@@ -350,11 +350,11 @@ class Wavepal:
 	
 	
 	
-	def choose_trend_order(self,pol_order):
+	def choose_trend_degree(self,pol_degree):
 
-		""" choose_trend_order records the user choice for the order of the polynomial trend.
+		""" choose_trend_degree records the user choice for the degree of the polynomial trend.
 			Required Inputs:
-			- pol_order [int]: the order of the polynomial trend. pol_order=-1 means no trend (trend is imposed to zero). pol_order=0 means trend=constant=data average. pol_order=1 means linear detrending (trend=a*t+b). etc.
+			- pol_degree [int]: the degree of the polynomial trend. pol_degree=-1 means no trend (trend is imposed to zero). pol_degree=0 means trend=constant=data average. pol_degree=1 means linear detrending (trend=a*t+b). etc.
 			Outputs:
 			/
 			-----------------------------
@@ -365,9 +365,9 @@ class Wavepal:
 		
 		# check inputs
 		try:
-			assert (type(pol_order) is int) and pol_order>=-1
+			assert (type(pol_degree) is int) and pol_degree>=-1
 		except AssertionError:
-			print "Error at input 'pol_order': must be an integer >= -1"
+			print "Error at input 'pol_degree': must be an integer >= -1"
 			return
 		# check that some functions were previously run
 		try:
@@ -375,9 +375,9 @@ class Wavepal:
 		except AssertionError:
 			print "Error: Must have run function 'check_data'"
 			return
-		self.pol_order=pol_order
-		self.trend=detrending(self.t,self.mydata,self.pol_order)
-		self.run_choose_trend_order=True
+		self.pol_degree=pol_degree
+		self.trend=detrending(self.t,self.mydata,self.pol_degree)
+		self.run_choose_trend_degree=True
 
 
 
@@ -488,9 +488,9 @@ class Wavepal:
 			print "Error: Must have run function 'check_data'"
 			return
 		try:
-			assert self.run_choose_trend_order is True
+			assert self.run_choose_trend_degree is True
 		except AssertionError:
-			print "Error: Must have run function 'choose_trend_order'"
+			print "Error: Must have run function 'choose_trend_degree'"
 			return
 		if p>1 and 'a' in signif_level_type:
 			print "WARNING: p>1 and 'a' in signif_level_type => ENSURE THAT THE MARGINAL POSTERIOR DISTRIBUTIONS OF ALL THE PARAMETERS ARE UNIMODAL. HAVE A LOOK AT THE HISTOGRAMS. Input parameter 'make_carma_fig' must be 'yes'."
@@ -797,15 +797,15 @@ class Wavepal:
 			print "Error: Must have run function 'check_data'"
 			return
 		try:
-			assert self.run_choose_trend_order is True
+			assert self.run_choose_trend_degree is True
 		except AssertionError:
-			print "Error: Must have run function 'choose_trend_order'"
+			print "Error: Must have run function 'choose_trend_degree'"
 			return
 
 		tbis=self.t/self.t[-1]    # for numerical stability with the powers of the time, for the polynomial trend
-		myprojvec=np.zeros((self.nt,self.pol_order+3))
-		Vmat=np.zeros((self.nt,self.pol_order+3))
-		for o in range(self.pol_order+1):
+		myprojvec=np.zeros((self.nt,self.pol_degree+3))
+		Vmat=np.zeros((self.nt,self.pol_degree+3))
+		for o in range(self.pol_degree+1):
 			myprojvec_o=tbis**o
 			Vmat[:,o]=copy.copy(myprojvec_o)
 			for k in range(o):	# Gram-Schmidt
@@ -983,9 +983,9 @@ class Wavepal:
 				print "Error: Must have run function 'check_data'"
 				return
 			try:
-				assert self.run_choose_trend_order is True
+				assert self.run_choose_trend_degree is True
 			except AssertionError:
-				print "Error: Must have run function 'choose_trend_order'"
+				print "Error: Must have run function 'choose_trend_degree'"
 				return
 		try:
 			assert self.run_trend_vectors is True
@@ -1018,7 +1018,7 @@ class Wavepal:
 			print "Error: Not enough frequency points - please provide at least 6 frequency points"
 			return
 		# Build the WOSA Lomb-Scargle components
-		self.freq,self.tau,self.myind_time,self.myind_freq,self.myind_Q,self.D,self.nsmooth_vec,self.nsmooth,weight_WOSA=freq_analysis_prelims(self.t,freq,D,betafact,mywindow,coverage,freq_min_bound,freq_max_bound,self.pol_order,WOSA_segments,weighted_WOSA)
+		self.freq,self.tau,self.myind_time,self.myind_freq,self.myind_Q,self.D,self.nsmooth_vec,self.nsmooth,weight_WOSA=freq_analysis_prelims(self.t,freq,D,betafact,mywindow,coverage,freq_min_bound,freq_max_bound,self.pol_degree,WOSA_segments,weighted_WOSA)
 		self.tapwindow=mywindow
 		self.weighted_WOSA=weighted_WOSA
 		J=self.freq.size
@@ -1054,9 +1054,9 @@ class Wavepal:
 		print "Main loop, over the frequencies:"
 		for k in trange(J):
 			if computes_amplitude=='yes':
-				Amplitude, M2=LS_WOSA_and_Ampl(self.t,self.mydata,self.freq[k],k,self.myprojvec,self.Vmat,self.D,self.tau,self.nsmooth,self.nsmooth_vec[k],self.myind_time,self.myind_freq,self.tapwindow,self.pol_order,weight_WOSA)
+				Amplitude, M2=LS_WOSA_and_Ampl(self.t,self.mydata,self.freq[k],k,self.myprojvec,self.Vmat,self.D,self.tau,self.nsmooth,self.nsmooth_vec[k],self.myind_time,self.myind_freq,self.tapwindow,self.pol_degree,weight_WOSA)
 			else:
-				M2=LS_WOSA(self.t,self.freq[k],k,self.myprojvec,self.D,self.tau,self.nsmooth,self.nsmooth_vec[k],self.myind_time,self.myind_freq,self.tapwindow,self.pol_order,weight_WOSA)
+				M2=LS_WOSA(self.t,self.freq[k],k,self.myprojvec,self.D,self.tau,self.nsmooth,self.nsmooth_vec[k],self.myind_time,self.myind_freq,self.tapwindow,self.pol_degree,weight_WOSA)
 			# Significance levels - full MCMC approach (work with a distribution of carma params) and analytical approach (work with 1 set of the params)
 			if ('a' in self.signif_level_type) or ('n' in self.signif_level_type):
 				M2prim=np.transpose(M2)
@@ -1103,8 +1103,8 @@ class Wavepal:
 			self.periodogram[k]=la.norm(np.dot(np.transpose(self.mydata),M2))**2
 			# Data F-periodogram
 			if self.p==0 and self.q==0 and self.nsmooth==1 and self.tapwindow==2 and self.myind_time[0,0]==0 and self.myind_time[0,1]==self.nt-1:
-				self.myprojvec[:,self.pol_order+1]=M2[:,0]*corr_WOSA_weight
-				self.myprojvec[:,self.pol_order+2]=M2[:,1]*corr_WOSA_weight
+				self.myprojvec[:,self.pol_degree+1]=M2[:,0]*corr_WOSA_weight
+				self.myprojvec[:,self.pol_degree+2]=M2[:,1]*corr_WOSA_weight
 				compl_spectrum_data[k]=(norm_sq_mydata-la.norm(np.dot(np.transpose(self.mydata),self.myprojvec))**2)/corr_WOSA_weight**2
 			if computes_amplitude=='yes':
 				# Data Amplitude
@@ -1115,11 +1115,11 @@ class Wavepal:
 				self.amplitude[k]/=float(self.nsmooth_vec[k])
 			self.periodogram[k]/=float(self.nsmooth_vec[k])
 		if self.p==0 and self.q==0 and self.nsmooth==1 and self.tapwindow==2 and self.myind_time[0,0]==0 and self.myind_time[0,1]==self.nt-1:
-			self.f_periodogram=float(self.nt-self.pol_order-3)*self.periodogram/compl_spectrum_data/2.0
+			self.f_periodogram=float(self.nt-self.pol_degree-3)*self.periodogram/compl_spectrum_data/2.0
 			# signif levels
 			self.f_periodogram_cl=np.zeros((J,npercentile))
 			for k in range(npercentile):
-				self.f_periodogram_cl[:,k]=fdistr.ppf(percentile[k]/100.0,2,self.nt-self.pol_order-3)
+				self.f_periodogram_cl[:,k]=fdistr.ppf(percentile[k]/100.0,2,self.nt-self.pol_degree-3)
 		if computes_amplitude=='yes':
 			self.amplitude=np.sqrt(self.amplitude)
 		# Linear combination of chi squares: approx at the n_moment order
@@ -2061,9 +2061,9 @@ class Wavepal:
 				print "Error: Must have run function 'check_data'"
 				return
 			try:
-				assert self.run_choose_trend_order is True
+				assert self.run_choose_trend_degree is True
 			except AssertionError:
-				print "Error: Must have run function 'choose_trend_order'"
+				print "Error: Must have run function 'choose_trend_degree'"
 				return
 		try:
 			assert self.run_trend_vectors is True
@@ -2122,7 +2122,7 @@ class Wavepal:
 		for k in range(J+1):
 			scale[k]=scalemin*2.**(float(k)*deltaj)
 		# Build the CWT components
-		scale,self.coi1,self.coi2,self.coi1_smooth,self.coi2_smooth,coi_smooth_ind,weight_cwt,scalelim1_ind,scalelim1_smooth,scalelim1_ind_smooth,Qmax,n_outside_scalelim1=timefreq_analysis_prelims(self.t,self.theta,scale,w0,self.pol_order,gauss_spread,eps,dt_GCD,shannonnyquistexclusionzone,weighted_CWT,smoothing_coeff,smoothing_type)
+		scale,self.coi1,self.coi2,self.coi1_smooth,self.coi2_smooth,coi_smooth_ind,weight_cwt,scalelim1_ind,scalelim1_smooth,scalelim1_ind_smooth,Qmax,n_outside_scalelim1=timefreq_analysis_prelims(self.t,self.theta,scale,w0,gauss_spread,eps,dt_GCD,shannonnyquistexclusionzone,weighted_CWT,smoothing_coeff,smoothing_type)
 		self.weighted_CWT=weighted_CWT
 		J=scale.size
 		Q=self.theta.size
@@ -2181,9 +2181,9 @@ class Wavepal:
 		for l in trange(J):
 			scale_l=scale[l]
 			if computes_amplitude=='yes':
-				Amplitude, M2, mytheta, mytheta_ind=CWT_and_Ampl(self.t,self.mydata,self.theta,l,scale_l,self.myprojvec,self.Vmat,self.pol_order,weight_cwt[:,l],scalelim1_ind,n_outside_scalelim1[l],w0)
+				Amplitude, M2, mytheta, mytheta_ind=CWT_and_Ampl(self.t,self.mydata,self.theta,l,scale_l,self.myprojvec,self.Vmat,self.pol_degree,weight_cwt[:,l],scalelim1_ind,n_outside_scalelim1[l],w0)
 			else:
-				M2, mytheta, mytheta_ind=CWT(self.t,self.theta,l,scale_l,self.myprojvec,self.pol_order,weight_cwt[:,l],scalelim1_ind,n_outside_scalelim1[l],w0)
+				M2, mytheta, mytheta_ind=CWT(self.t,self.theta,l,scale_l,self.myprojvec,self.pol_degree,weight_cwt[:,l],scalelim1_ind,n_outside_scalelim1[l],w0)
 			# Data scalogram - intermediate calculus
 			scalogram_int=np.dot(mydata_transp,M2)
 			# Scalogram MCMC - intermediate calculus

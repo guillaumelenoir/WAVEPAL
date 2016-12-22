@@ -5,7 +5,7 @@ from tqdm import trange
 from tapering_window import tapering_window
 import copy
 
-def freq_analysis_prelims(time,freq,D,betafact,mywindow,coverage,freq_min_bound,freq_max_bound,pol_order,WOSA_segments,weighted_WOSA):
+def freq_analysis_prelims(time,freq,D,betafact,mywindow,coverage,freq_min_bound,freq_max_bound,pol_degree,WOSA_segments,weighted_WOSA):
 	
 	""" freq_analysis_prelims returns some variables for the frequency analysis in 'Wavepal' class.
 		Inputs:
@@ -18,7 +18,7 @@ def freq_analysis_prelims(time,freq,D,betafact,mywindow,coverage,freq_min_bound,
 		- freq_min_bound [str - value = 'yes' or 'no']: limit, or not, the lower bound of the frequency range, for each WOSA segment. More details in
 		'A General Theory on Spectral Analysis for Irregularly Sampled Time Series. I. Frequency Analysis', G. Lenoir and M. Crucifix
 		- freq_max_bound [str - value = 'yes' or 'no']: limit, or not, the upper bound of the frequency range, for each WOSA segment. More details in the above cited article.
-		- pol_order [int]: Order of the polynomial trend. pol_order=-1 means no trend.
+		- pol_degree [int]: Degree of the polynomial trend. pol_degree=-1 means no trend.
 		- WOSA_segments [int or str]: Choose the minimal number of WOSA segments to be present at each frequency to take it into account, thus defining the frequency range for the analysis.
 			-> WOSA_segments='all': No restrictions on the number of segments per frequency.
 			-> WOSA_segments='max': Consider only the frequencies for which the number of WOSA segments is maximal. This is the most restrictive case.
@@ -73,8 +73,8 @@ def freq_analysis_prelims(time,freq,D,betafact,mywindow,coverage,freq_min_bound,
 				else:
 					myindl_1=k
 		# If myindl_0==-1, there is a gap in the data that is > D
-		# If less than pol_order+3 data points, Gram-Schmidt is KO
-		if (myindl_0>-1 and (myindl_1-myindl_0)>(pol_order+1)):
+		# If less than pol_degree+3 data points, Gram-Schmidt is KO
+		if (myindl_0>-1 and (myindl_1-myindl_0)>(pol_degree+1)):
 			kin=myindl_0
 			mytime=time[myindl_0:myindl_1+1]-tau[l]
 			mydt1=dt_normal(mytime,D,mywindow)

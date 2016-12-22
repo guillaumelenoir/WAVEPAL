@@ -2,7 +2,7 @@ import numpy as np
 import numpy.linalg as la
 from tapering_window import tapering_window
 
-def LS_WOSA_and_Ampl(time,data,myfreq,freq_ind,myprojvec,Vmat,D,tau,Q,Q_true,myind_time,myind_freq,mywindow,pol_order,weight_WOSA):
+def LS_WOSA_and_Ampl(time,data,myfreq,freq_ind,myprojvec,Vmat,D,tau,Q,Q_true,myind_time,myind_freq,mywindow,pol_degree,weight_WOSA):
 	
 	""" LS_WOSA_and_Ampl computes the basic bricks for all the computations related to the periodogram and amplitude periodogram in 'Wavepal' class. It is called once for each frequency.
 		Inputs:
@@ -10,8 +10,8 @@ def LS_WOSA_and_Ampl(time,data,myfreq,freq_ind,myprojvec,Vmat,D,tau,Q,Q_true,myi
 		- data [1-dim numpy array of floats - size=time.size]: the data at the times given by 'time'.
 		- myfreq [float]: the frequency at which the periodogram is to be computed
 		- freq_ind [int]: the index of the frequency at which the periodogram is to be computed.
-		- myprojvec [numpy array of floats - dimension=(time.size,pol_order+3)]: array with content related to the trend. This is an output from 'trend_vectors', in 'Wavepal' class.
-		- Vmat [numpy array of floats - dimension=(time.size,pol_order+3)]: array with content related to the trend. This is an output from 'trend_vectors', in 'Wavepal' class.
+		- myprojvec [numpy array of floats - dimension=(time.size,pol_degree+3)]: array with content related to the trend. This is an output from 'trend_vectors', in 'Wavepal' class.
+		- Vmat [numpy array of floats - dimension=(time.size,pol_degree+3)]: array with content related to the trend. This is an output from 'trend_vectors', in 'Wavepal' class.
 		- D [float]: the temporal length of the WOSA segments, as output from freq_analysis_prelims. 
 		- tau [1-dim numpy array of floats]: values of the times at which start the WOSA segments, as output from freq_analysis_prelims (variable 'tau_considered')
 		- Q [int]: Number of WOSA segments, as output from freq_analysis_prelims (variable 'Qtot')
@@ -19,7 +19,7 @@ def LS_WOSA_and_Ampl(time,data,myfreq,freq_ind,myprojvec,Vmat,D,tau,Q,Q_true,myi
 		- myind_time [numpy array of ints - dim=(tau.size,2)]: min. and max. temporal indices (of the vector 'time') for each WOSA segment, as output from freq_analysis_prelims
 		- myind_freq [list of size=tau.size]: Each entry of the list contains an array with the frequency indices (of the output vector 'freq') which are taken into account on the WOSA segment, as output from freq_analysis_prelims (variable 'myind_freq_full')
 		- mywindow [int]: window choice for the windowing of the WOSA segments. See tapering_window.py for more details.
-		- pol_order [int]: order of the polynomial trend. pol_order=-1 means no trend.
+		- pol_degree [int]: degree of the polynomial trend. pol_degree=-1 means no trend.
 		- weight_WOSA [1-dim numpy array of floats - size=tau.size]: the weights for the weighted periodogram.
 		Outputs:
 		- Ampl [numpy array of floats - dimension=(2,Q_true)]: Amplitude periodogram. Ampl[0,:] gives the amplitudes of the 'cos' part and Ampl[1,:] gives the amplitudes of the 'sin' part, on each WOSA segment at the given frequency.
@@ -44,21 +44,21 @@ def LS_WOSA_and_Ampl(time,data,myfreq,freq_ind,myprojvec,Vmat,D,tau,Q,Q_true,myi
 			gvec[myindl_0:myindl_1+1]=tapering_window(mytime,D,mywindow)
 			domega=2.0*np.pi*myfreq
 			mycos=np.cos(domega*time)
-			Vmat[:,pol_order+1]=mycos[:]
+			Vmat[:,pol_degree+1]=mycos[:]
 			mycos[:]=gvec*mycos				# weighted cosine
-			for p in range(pol_order+1):     # Gram-Schmidt
+			for p in range(pol_degree+1):     # Gram-Schmidt
 				h=myprojvec[:,p]
 				mycos[:]-=np.dot(h,mycos)*h
 			mycos[:]/=la.norm(mycos)
-			myprojvec[:,pol_order+1]=mycos[:]
+			myprojvec[:,pol_degree+1]=mycos[:]
 			mysin=np.sin(domega*time)
-			Vmat[:,pol_order+2]=mysin[:]
+			Vmat[:,pol_degree+2]=mysin[:]
 			mysin[:]=gvec*mysin
-			for p in range(pol_order+2):     # Gram-Schmidt
+			for p in range(pol_degree+2):     # Gram-Schmidt
 				h=myprojvec[:,p]
 				mysin[:]-=np.dot(h,mysin)*h
 			mysin[:]/=la.norm(mysin)
-			myprojvec[:,pol_order+2]=mysin[:]
+			myprojvec[:,pol_degree+2]=mysin[:]
 			ll+=1
 			M2[:,2*ll]=mycos[:]*weight_WOSA[l]
 			M2[:,2*ll+1]=mysin[:]*weight_WOSA[l]

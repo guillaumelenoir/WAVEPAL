@@ -3,7 +3,7 @@ from tqdm import trange
 from dt_central import dt_central
 import copy
 
-def timefreq_analysis_prelims(time,tau,scale,w0,pol_order,gauss_spread,eps,dt_GCD,shannonnyquistexclusionzone,weighted_CWT,smoothing_coeff,smoothing_type):
+def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonnyquistexclusionzone,weighted_CWT,smoothing_coeff,smoothing_type):
 
 	""" timefreq_analysis_prelims returns some variables for the time-frequency analysis in 'Wavepal' class.
 		Inputs:
@@ -11,7 +11,6 @@ def timefreq_analysis_prelims(time,tau,scale,w0,pol_order,gauss_spread,eps,dt_GC
 		- tau [1-dim numpy array of floats]: the times at which the CWT is to be computed, distinct and in ascending order.
 		- scale [1-dim numpy array of floats]: the scales, distinct and in ascending order.
 		- w0 [float]: the usual parameter for the Morlet wavelet controlling the time-frequency resolution. Minimal allowed value is w0=5.5.
-		- pol_order [int]: Order of the polynomial trend. pol_order=-1 means no trend.
 		- gauss_spread [float]: parameter for the spread of gaussian. 2*gauss_spread*std (where std is the standard dev. of the gaussian) is the approximate SUPPORT (i.e. where the function is not zero) of a gaussian. Typical values are gauss_spread=3.0 (conservative choice) or sqrt(2.0) (value taken in Torrence and Compo, 1998, and some subsequent papers). This is used for the computation of the cone of influence and for the max. allowed scale.
 		- eps [float]: parameter controlling the flexibility on the value of the border of the Shannon-Nyquist exclusion zone. Typical value is eps=1.0e-06. 
 		- dt_GCD [float]: the greatest common divisor of the time steps of the times in 'time'. 
