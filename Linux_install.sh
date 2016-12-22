@@ -28,8 +28,5 @@ cd test
 python test.py
 cd figures
 rm -f *
-echo "End of test"
-
-echo "INSTALLATION COMPLETED SUCCESSFULLY"
 
 #Done
