@@ -850,7 +850,7 @@ class Wavepal:
 				-> WOSA_segments='max': Consider only the frequencies for which the number of WOSA segments is maximal. This is the most restrictive case.
 				-> WOSA_segments=None: Consider only the frequencies for which the number of WOSA segments is at least 10, or maximal if there are less than 10 segments.
 				-> WOSA_segments=n (n is an integer): Consider only the frequencies for which the number of WOSA segments is at least n.
-			- percentile=None: The xx % percentiles for the confidence levels. Must be a 1-dim numpy array. Default is 95%:percentile=np.zeros(1); percentile[0]=95.0
+			- percentile=None: The x^th percentiles for the confidence levels. Must be a 1-dim numpy array. Default is the 95^th percentile (i.e. the 95% confidence level):percentile=np.zeros(1); percentile[0]=95.0
 			- weighted_WOSA="yes": 'yes' to get the weighted periodogram, or 'no' for the classical periodogram. 
 			- n_moments=10: number of conserved moments for the analytical confidence levels. Must be >= 2. Used if "a" is in signif_level_type (see function 'carma_params')
 			- MaxFunEvals=100000: "max_nfev" option for "least_squares" - see python help of "scipy.optimize.least_squares". Used if algo_moments='generalized-gamma-polynomial'.
@@ -1914,7 +1914,7 @@ class Wavepal:
 				-> the std depends on the scale.
 				-> Near the edges of the time series or close the the Shannon-Nyquist exclusion zone, the full interval over theta-smoothing_coeff*std to theta+smoothing_coeff*std cannot be considered. In such case, the CWT_smoothed at (theta,scale) is either ignored (if smoothing_type='fixed') or the interval around theta is shortened (if smoothing_type='variable').
 			- smoothing_type='fixed': See above the explanations for 'smoothing_coeff'.
-			- percentile=None: The xx % percentiles for the confidence levels. Must be a 1-dim numpy array. Default is 95%:percentile=np.zeros(1); percentile[0]=95.0
+			- percentile=None: The x^th percentiles for the confidence levels. Must be a 1-dim numpy array. Default is the 95^th percentile (i.e. the 95% confidence level):percentile=np.zeros(1); percentile[0]=95.0
 			- n_moments=2: number of conserved moments for the analytical confidence levels. Used if "a" is in signif_level_type (see function 'carma_params').
 			- MaxFunEvals=100000: "max_nfev" option for "least_squares" - see python help of "scipy.optimize.least_squares". Used if algo_moments='generalized-gamma-polynomial'.
 			- algo_moments='gamma-polynomial': Choice for the algorithm for the computation of analytical confidence levels. Used if "a" is in signif_level_type (see function 'carma_params'). algo_moments='gamma-polynomial' or algo='generalized-gamma-polynomial'.
