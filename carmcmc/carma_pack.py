@@ -743,7 +743,8 @@ class CarmaSample(samplers.MCMCSample):
         # Fin substitution perso
         plt.legend(fancybox=True,fontsize='xx-small',bbox_to_anchor=(1.1, 1.05))
         if(figname!=""):
-            plt.savefig(figname.split(".")[0]+"1"+"."+figname.split(".")[1],dpi=dpi)
+            myind=figname.rfind(".")
+            plt.savefig(figname[:myind]+"1"+figname[myind:],dpi=dpi)
             plt.close()
         if doShow:
             plt.show()
@@ -792,7 +793,8 @@ class CarmaSample(samplers.MCMCSample):
         plt.barh(bin_edges, pdf, height=bin_edges[1] - bin_edges[0],left=tstart,alpha=0.7,zorder=2)
         # Fin substitution perso
         if(figname!=""):
-            plt.savefig(figname.split(".")[0]+"2"+"."+figname.split(".")[1],dpi=dpi)
+            myind=figname.rfind(".")
+            plt.savefig(figname[:myind]+"2"+figname[myind:],dpi=dpi)
             plt.close()
         if doShow:
             plt.show()
@@ -811,7 +813,8 @@ class CarmaSample(samplers.MCMCSample):
 		# Fin modif perso
         plt.ylabel('ACF of Residuals')
         if(figname!=""):
-            plt.savefig(figname.split(".")[0]+"3"+"."+figname.split(".")[1],dpi=dpi)
+            myind=figname.rfind(".")
+            plt.savefig(figname[:myind]+"3"+figname[myind:],dpi=dpi)
             plt.close()
         if doShow:
             plt.show()
@@ -828,7 +831,8 @@ class CarmaSample(samplers.MCMCSample):
         plt.ylabel('ACF of Sqrd. Resid.')
         plt.tight_layout()
         if(figname!=""):
-            plt.savefig(figname.split(".")[0]+"4"+"."+figname.split(".")[1],dpi=dpi)
+            myind=figname.rfind(".")
+            plt.savefig(figname[:myind]+"4"+figname[myind:],dpi=dpi)
             plt.close()
         if doShow:
 	        plt.show()
