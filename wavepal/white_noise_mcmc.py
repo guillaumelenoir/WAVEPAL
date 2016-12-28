@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import chi2 as chi2distr
 from scipy.stats import gamma as gammadistr
 
-def white_noise_mcmc(alpha_gammma,beta_gamma,smoothing_length,nmcmc):
+def white_noise_mcmc(alpha_gamma,beta_gamma,smoothing_length,nmcmc):
 
 	""" white_noise_mcmc generates chi-square samples, weigthed by a variance whose inverse follows a gamma distribution, for use with MCMC computations related to white noise in 'Wavepal'. More details in:
 		'A General Theory on Spectral Analysis for Irregularly Sampled Time Series. I. Frequency Analysis', G. Lenoir and M. Crucifix
