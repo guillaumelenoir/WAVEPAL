@@ -1393,7 +1393,7 @@ class Wavepal:
 			if 'a' in self.signif_level_type:
 				if self.p==0:
 					if loglog=="no":
-						plt.plot(self.freq**mypow,self.periodogram_cl_anal[:,k],label="CL at "+str(self.percentile[k])+"%"+" (from max. pdf param.),linewidth=linewidth_cl)
+						plt.plot(self.freq**mypow,self.periodogram_cl_anal[:,k],label="CL at "+str(self.percentile[k])+"%"+" (from max. pdf param.)",linewidth=linewidth_cl)
 					elif loglog=="yes":
 						plt.loglog(self.freq**mypow,self.periodogram_cl_anal[:,k],label="CL at "+str(self.percentile[k])+"%"+" (from max. pdf param.)",linewidth=linewidth_cl)
 				else:
