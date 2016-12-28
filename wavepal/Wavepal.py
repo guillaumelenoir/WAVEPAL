@@ -612,7 +612,7 @@ class Wavepal:
 					nsamples=min(10000,nmcmc_carma)
 					figname=path_to_figure_folder+"carma_spectrum.pdf"
 					sample.plot_power_spectrum(figname=figname,percentile=95,nsamples=nsamples,doShow=False,dpi=dpi)
-				# Skim off the coefficients to have (approximately) independent samples
+				# Skim off the distribution to have (approximately) independent samples
 				print "Decorrelation length (in number of samples): ", mylength
 				self.mylength=mylength
 				sigwn=sample.get_samples('sigma')[0::mylength]
@@ -736,7 +736,7 @@ class Wavepal:
 						medianalpha=np.median(alpha)
 						mediansigwn=np.median(sigwn)
 						self.ARMA_mat_unique=carma_matrix_car1(self.t,medianalpha,mediansigwn)
-						print "Median coefficients:"
+						print "Median parameters:"
 						print "--------------------"
 						print "alpha: ", medianalpha
 						print "std white noise: ", mediansigwn
@@ -763,7 +763,7 @@ class Wavepal:
 						medianbeta=np.median(beta,0)
 						medianvarwn=np.median(varwn)
 						carma_mat_unique=carma_matrix(self.t,self.p,self.q,medianalpha,medianbeta,medianvarwn)
-						print "Median coefficients:"
+						print "Median parameters:"
 						print "--------------------"
 						print "alpha: ", medianalpha
 						print "beta: ", medianbeta
@@ -1387,20 +1387,20 @@ class Wavepal:
 		for k in range(self.percentile.size):
 			if 'n' in self.signif_level_type:
 				if loglog=="no":
-					plt.plot(self.freq**mypow,self.periodogram_cl_mcmc[:,k],label="MCMC conf. level with distr. coeffs  - "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
+					plt.plot(self.freq**mypow,self.periodogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile[k])+"%"+" (from distr. param.)",linewidth=linewidth_cl)
 				elif loglog=="yes":
-					plt.loglog(self.freq**mypow,self.periodogram_cl_mcmc[:,k],label="MCMC conf. level with distr. coeffs - "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
+					plt.loglog(self.freq**mypow,self.periodogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile[k])+"%"+" (from distr. param.)",linewidth=linewidth_cl)
 			if 'a' in self.signif_level_type:
 				if self.p==0:
 					if loglog=="no":
-						plt.plot(self.freq**mypow,self.periodogram_cl_anal[:,k],label="Conf. level with max. pdf coeff - "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
+						plt.plot(self.freq**mypow,self.periodogram_cl_anal[:,k],label="CL at "+str(self.percentile[k])+"%"+" (from max. pdf param.),linewidth=linewidth_cl)
 					elif loglog=="yes":
-						plt.loglog(self.freq**mypow,self.periodogram_cl_anal[:,k],label="Conf. level with max. pdf coeff - "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
+						plt.loglog(self.freq**mypow,self.periodogram_cl_anal[:,k],label="CL at "+str(self.percentile[k])+"%"+" (from max. pdf param.)",linewidth=linewidth_cl)
 				else:
 					if loglog=="no":
-						plt.plot(self.freq**mypow,self.periodogram_cl_anal[:,k],label="Anal. conf. level with median coeffs - "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
+						plt.plot(self.freq**mypow,self.periodogram_cl_anal[:,k],label="Anal. CL at "+str(self.percentile[k])+"%"+" (from median param.)",linewidth=linewidth_cl)
 					elif loglog=="yes":
-						plt.loglog(self.freq**mypow,self.periodogram_cl_anal[:,k],label="Anal. conf. level with median coeffs - "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
+						plt.loglog(self.freq**mypow,self.periodogram_cl_anal[:,k],label="Anal. CL at "+str(self.percentile[k])+"%"+" (from median param.)",linewidth=linewidth_cl)
 		plt.legend(fancybox=True,fontsize=fontsize_legend,bbox_to_anchor=(1.1, 1.05))
 		if xaxis=="period":
 			plt.xlabel("Period"+self.t_label,fontsize=fontsize_axes)
@@ -1483,9 +1483,9 @@ class Wavepal:
 			plt.loglog(self.freq**mypow,self.f_periodogram,"k",label="Data F-periodogram",linewidth=linewidth_per)
 		for k in range(self.percentile.size):
 			if loglog=="no":
-				plt.plot(self.freq**mypow,self.f_periodogram_cl[:,k],label="Conf level at "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
+				plt.plot(self.freq**mypow,self.f_periodogram_cl[:,k],label="CL at "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
 			elif loglog=="yes":
-				plt.loglog(self.freq**mypow,self.f_periodogram_cl[:,k],label="Conf level at "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
+				plt.loglog(self.freq**mypow,self.f_periodogram_cl[:,k],label="CL at "+str(self.percentile[k])+"%",linewidth=linewidth_cl)
 		plt.legend(fancybox=True,fontsize=fontsize_legend)
 		if xaxis=="period":
 			plt.xlabel("Period"+self.t_label,fontsize=fontsize_axes)
@@ -4397,26 +4397,26 @@ class Wavepal:
 		elif xaxis=="frequency":
 			mypow=-1
 		if loglog=="no":
-			plt.plot(self.period_cwt**mypow,self.global_scalogram,"k",label="Data periodogram",linewidth=linewidth_gscal)
+			plt.plot(self.period_cwt**mypow,self.global_scalogram,"k",label="Data global scal.",linewidth=linewidth_gscal)
 		elif loglog=="yes":
-			plt.loglog(self.period_cwt**mypow,self.global_scalogram,"k",label="Data periodogram",linewidth=linewidth_gscal)
+			plt.loglog(self.period_cwt**mypow,self.global_scalogram,"k",label="Data global scal.",linewidth=linewidth_gscal)
 		for k in range(self.percentile_cwt.size):
 			if 'n' in self.signif_level_type:
 				if loglog=="no":
-					plt.plot(self.period_cwt**mypow,self.global_scalogram_cl_mcmc[:,k],label="MCMC conf. level with distr. coeffs - "+str(self.percentile_cwt[k])+"%",linewidth=linewidth_gcl)
+					plt.plot(self.period_cwt**mypow,self.global_scalogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile_cwt[k])+"%"+" (from distr. param.)",linewidth=linewidth_gcl)
 				elif loglog=="yes":
-					plt.loglog(self.period_cwt**mypow,self.global_scalogram_cl_mcmc[:,k],label="MCMC conf. level with distr. coeffs - "+str(self.percentile_cwt[k])+"%",linewidth=linewidth_gcl)
+					plt.loglog(self.period_cwt**mypow,self.global_scalogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile_cwt[k])+"%"+" (from distr. param.)",linewidth=linewidth_gcl)
 			if 'a' in self.signif_level_type:
 				if self.p==0:
 					if loglog=="no":
-						 plt.plot(self.period_cwt**mypow,self.global_scalogram_cl_anal[:,k],label="Conf. level with max. pdf coeff - "+str(self.percentile_cwt[k])+"%",linewidth=linewidth_gcl)
+						 plt.plot(self.period_cwt**mypow,self.global_scalogram_cl_anal[:,k],label="CL at "+str(self.percentile_cwt[k])+"%"+" (from max. pdf param.)",linewidth=linewidth_gcl)
 					elif loglog=="yes":
-						 plt.loglog(self.period_cwt**mypow,self.global_scalogram_cl_anal[:,k],label="Conf. level with max. pdf coeff - "+str(self.percentile_cwt[k])+"%",linewidth=linewidth_gcl)
+						 plt.loglog(self.period_cwt**mypow,self.global_scalogram_cl_anal[:,k],label="CL at "+str(self.percentile_cwt[k])+"%"+" (from max. pdf param.)",linewidth=linewidth_gcl)
 				else:
 					if loglog=="no":
-						 plt.plot(self.period_cwt**mypow,self.global_scalogram_cl_anal[:,k],label="Anal. conf. level with median coeffs - "+str(self.percentile_cwt[k])+"%",linewidth=linewidth_gcl)
+						 plt.plot(self.period_cwt**mypow,self.global_scalogram_cl_anal[:,k],label="Anal. CL at "+str(self.percentile_cwt[k])+"%"+" (from median param.)",linewidth=linewidth_gcl)
 					elif loglog=="yes":
-						 plt.loglog(self.period_cwt**mypow,self.global_scalogram_cl_anal[:,k],label="Anal. conf. level with median coeffs - "+str(self.percentile_cwt[k])+"%",linewidth=linewidth_gcl)
+						 plt.loglog(self.period_cwt**mypow,self.global_scalogram_cl_anal[:,k],label="Anal. CL at "+str(self.percentile_cwt[k])+"%"+" (from median param.)",linewidth=linewidth_gcl)
 		plt.legend(fancybox=True,fontsize=fontsize_legend,bbox_to_anchor=(1.1, 1.05))
 		if xaxis=="period":
 			plt.xlabel("Period"+self.t_label,fontsize=fontsize_axes)
