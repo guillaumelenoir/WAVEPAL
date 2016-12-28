@@ -741,7 +741,7 @@ class Wavepal:
 						print "alpha: ", medianalpha
 						print "std white noise: ", mediansigwn
 						self.sigwn_unique=mediansigwn
-						self.alpha_unique=medianalpha
+						self.alpha_unique=medianalpha*np.ones(1)
 				elif self.p>1: # generate CARMA(p,q) processes with p>1, for MCMC and the matrix with unique params for the analytical case
 					varwn=sigwn**2
 					if 'n' in signif_level_type:
