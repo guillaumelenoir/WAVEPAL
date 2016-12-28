@@ -1318,7 +1318,10 @@ class Wavepal:
 		elif xaxis=="frequency":
 			plt.xlabel("Frequency"+self.freq_label,fontsize=fontsize_axes)
 		plt.ylabel("# segments",fontsize=fontsize_axes)
-		plt.title("Number of WOSA segments", fontsize=fontsize_title)
+		if xaxis=="period":
+			plt.title("Number of WOSA segments per period", fontsize=fontsize_title)
+		elif xaxis=="frequency":
+			plt.title("Number of WOSA segments per frequency", fontsize=fontsize_title)
 		plt.tick_params(labelsize=fontsize_ticks)
 		return plt
 
