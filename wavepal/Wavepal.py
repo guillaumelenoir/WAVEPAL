@@ -916,9 +916,9 @@ class Wavepal:
 			print "Error at input 'mywindow': must be of 'int' type and >=1"
 			return
 		try:
-			assert (type(D) is float) and (D>0.)
+			assert (D is None) or ((type(D) is float) and (D>0.))
 		except AssertionError:
-			print "Error at input 'D': must be of 'float' type and >0."
+			print "Error at input 'D': must be None or of 'float' type and >0."
 			return
 		try:
 			assert (type(betafact) is float) and (betafact>=0.) and (betafact<1.)
