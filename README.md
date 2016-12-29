@@ -45,7 +45,7 @@ sh MacOSX_install.sh
 ```
 and that is all!
 
-Python 2.7 and all the dependencies of WAVEPAL are installed. Feel free to modify the installation file.
+Python 2.7 and all the dependencies of WAVEPAL are installed. Type `python2.7` instead of `python` at the terminal when you call python. Feel free to modify the installation file.
 
 ------------
 
