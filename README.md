@@ -33,7 +33,7 @@ and that is all!
 
 Python 2.X and all the dependencies of WAVEPAL are installed. Feel free to modify the installation file. 
 
-### On Mac OS X (tested on Mac OS 10.10 Yosemite and 10.12 Sierra)
+### On Mac OS X (tested on Mac OS 10.9 Mavericks, 10.10 Yosemite, and 10.12 Sierra)
 
 You first need to install MacPorts from [this website](https://www.macports.org/install.php). You also need xcodebuild, but this should be installed if you use the [terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) (if not, you will be asked to install it the first time you use the terminal). 
 
