@@ -381,25 +381,25 @@ class Wavepal:
 
 
 
-	def carma_params(self,p=1,q=0,signif_level_type="a",min_autocorrelation=0.2,nmcmc=10000,nmcmc_carma_max=1000000,make_carma_fig="no",path_to_figure_folder="",nbins=10,maxlag=50,golden_fact=100.,dpi=None):
+	def carma_params(self,p=1,q=0,signif_level_type="a",min_autocorrelation=0.2,nmcmc=None,nmcmc_carma_max=1000000,make_carma_fig="no",path_to_figure_folder="",nbins=10,maxlag=50,golden_fact=100.,dpi=None):
 		
 		""" carma_params builds all the material related to the CARMA(p,q) background noise. It uses 'carma pack' python package to estimate the parameters of the carma process and to generate MCMC samples. 'carma pack' relies on the following paper:
 			B. C. Kelly, A. C. Becker, M. Sobolewska, A. Siemiginowska, and P. Uttley. Flexible and scalable methods for quantifying stochastic variability in the era of massive time-domain astronomical data sets. The Astrophysical Journal, 788(1):33, 2014.
 			Note that 'carma pack' is not used when dealing with a white noise (p=q=0).
 			Optional Inputs:
 			- p=1 and q=0: the orders of the CARMA(p,q) process. Other options are
-				-> p=q=0, or
-				-> p>=1 and p>q
+			-> p=q=0, or
+			-> p>=1 and p>q
 			- signif_level_type="a". Other options are:
-				-> signif_level_type="n"
-				-> signif_level_type="an"
-				-> signif_level_type=""
-			  If "a" is in signif_level_type, analytical confidence levels will be computed in a later step, and carma_params builds matrix K. Matrix K is defined in
-			  'A General Theory on Spectral Analysis for Irregularly Sampled Time Series. I. Frequency Analysis', G. Lenoir and M. Crucifix
-			  If "n" is in signif_level_type, MCMC confidence levels will be computed in a later step, and carma_params generates MCMC samples of a carma(p,q) time series. 
-			  If signif_level_type="", confidence levels won't be computed in a later step. 
+			-> signif_level_type="n"
+			-> signif_level_type="an"
+			-> signif_level_type=""
+			If "a" is in signif_level_type, analytical confidence levels will be computed in a later step, and carma_params builds matrix K. Matrix K is defined in
+			'A General Theory on Spectral Analysis for Irregularly Sampled Time Series. I. Frequency Analysis', G. Lenoir and M. Crucifix
+			If "n" is in signif_level_type, MCMC confidence levels will be computed in a later step, and carma_params generates MCMC samples of a carma(p,q) time series.
+			If signif_level_type="", confidence levels won't be computed in a later step.
 			- min_autocorrelation=0.2: value of the autocorrelation for the variables of the posterior carma distribution for which the lag is returned. That lag is the 'decorrelation length' of the posteriori distribution, and is used ta skim off the distribution to get decorrelated samples. Typical values are 0.1 or 0.2. For the same final number of samples, the smallest min_autocorrelation is, the longest is the computing time, because a small value for min_autocorrelation means a lot of raw samples to be generated.
-			- nmcmc=10000: Number of MCMC samples. If "a" is in signif_level_type, that's the approximate number of samples for the parameters, that are used to compute the median values. If "n" is in signif_level_type, that's the approximate number of generated carma(p,q) time series. Note that, due to the skimming off explained above, a bigger number of MCMC samples is first generated. That number may be limited to save computing time (see nmcmc_carma_max below) but in that case, nmcmc may be automatically adpated toward a smaller value.
+			- nmcmc=None: Number of MCMC samples. If "a" is in signif_level_type, that's the approximate number of samples for the parameters, that are used to compute the median values. If "n" is in signif_level_type, that's the approximate number of generated carma(p,q) time series. Note that, due to the skimming off explained above, a bigger number of MCMC samples is first generated. That number may be limited to save computing time (see nmcmc_carma_max below) but in that case, nmcmc may be automatically adpated toward a smaller value. The final value of nmcmc is, indicated at the terminal. Default initial values: nmcmc=1000 if signif_level_type="a", or nmcmc=10000 if signif_level_type="an" or "n".
 			- nmcmc_carma_max=1000000: Maximum number of MCMC samples in 'carma pack'.
 			- make_carma_fig="no": generates the figures of posterior distributions and the quality of the fit, most of them coming from 'carma pack'. Change to "yes" to activate it.
 			- path_to_figure_folder="": path to the folder where the figures are to be saved. Used if make_carma_fig="yes".
@@ -441,12 +441,12 @@ class Wavepal:
 			print "Error at input 'min_autocorrelation': must be of float type and between 0. and 1."
 			return
 		try:
-			assert (type(nmcmc) is int) and nmcmc>=10
+			assert (nmcmc is None) or ((type(nmcmc) is int) and nmcmc>=10)
 		except AssertionError:
-			print "Error at input 'nmcmc': must be of 'int' type and >=10"
+			print "Error at input 'nmcmc': must be None, or of 'int' type and >=10"
 			return
 		try:
-			assert (type(nmcmc) is int) and nmcmc_carma_max>=100
+			assert (type(nmcmc_carma_max) is int) and nmcmc_carma_max>=100
 		except AssertionError:
 			print "Error at input 'nmcmc_carma_max': must be of 'int' type and >=100"
 			return
@@ -494,6 +494,12 @@ class Wavepal:
 			return
 		if p>1 and 'a' in signif_level_type:
 			print "WARNING: p>1 and 'a' in signif_level_type => ENSURE THAT THE MARGINAL POSTERIOR DISTRIBUTIONS OF ALL THE PARAMETERS ARE UNIMODAL. HAVE A LOOK AT THE HISTOGRAMS. Input parameter 'make_carma_fig' must be 'yes'."
+		# Default value for variable 'nmcmc' if None
+		if nmcmc is None:
+			if 'n' in signif_level_type:
+				nmcmc=10000
+			elif 'a' in signif_level_type:
+				nmcmc=1000
 		self.p=p
 		self.q=q
 		self.signif_level_type=signif_level_type
@@ -508,54 +514,47 @@ class Wavepal:
 				print "*        CARMA PACK        *"
 				print "****************************"
 				yerr=np.zeros(self.nt)
-				if 'n' in signif_level_type:
-					# first round to estimate the number of independent samples
-					print ""
-					print "FIRST ROUND (to estimate the number of independent samples): with ", min(10000,nmcmc_carma_max), " samples"
-					print "**********************************************************************************************************"
-					model=cm.CarmaModel(t_carma,y,yerr,p=p,q=q)
-					sample=model.run_mcmc(min(10000,nmcmc_carma_max))
-					if p==1:
-						mylength1=decorrelation_length(sample.get_samples('log_omega')[:,0],min_autocorrelation)
-						mylength2=decorrelation_length(sample.get_samples('sigma')[:,0],min_autocorrelation)
-						mylength=max(mylength1,mylength2)
-					elif q==0 and p>1:
-						mylengthk=np.zeros(p,dtype=int)
-						for k in range(1,p+1):
-							mylengthk[k-1]=decorrelation_length(sample.get_samples('ar_coefs')[:,k],min_autocorrelation)
-						mylength=np.amax(mylengthk)
-						mylength2=decorrelation_length(sample.get_samples('sigma')[:,0],min_autocorrelation)
-						mylength=max(mylength,mylength2)
-					else:
-						mylengthk=np.zeros(p,dtype=int)
-						for k in range(1,p+1):
-							mylengthk[k-1]=decorrelation_length(sample.get_samples('ar_coefs')[:,k],min_autocorrelation)
-						mylengthj=np.zeros(q,dtype=int)
-						for k in range(1,q+1):
-							mylengthj[k-1]=decorrelation_length(sample.get_samples('ma_coefs')[:,k],min_autocorrelation)
-						mylength=max(np.amax(mylengthk),np.amax(mylengthj))
-						mylength2=decorrelation_length(sample.get_samples('sigma')[:,0],min_autocorrelation)
-						mylength=max(mylength,mylength2)
-					try:
-						assert np.isnan(mylength)==False
-					except AssertionError:
-						print "Error: with decorrelation length: You must increase 'min_autocorrelation' input variable"
-						return
-					print "Decorrelation length (in number of samples) - Estimation: ", mylength
-				elif 'a' in signif_level_type:
-					mylength=1
+				# first round to estimate the number of independent samples
+				print ""
+				print "FIRST ROUND (to estimate the number of independent samples): with ", min(10000,nmcmc_carma_max), " samples"
+				print "**********************************************************************************************************"
+				model=cm.CarmaModel(t_carma,y,yerr,p=p,q=q)
+				sample=model.run_mcmc(min(10000,nmcmc_carma_max))
+				if p==1:
+					mylength1=decorrelation_length(sample.get_samples('log_omega')[:,0],min_autocorrelation)
+					mylength2=decorrelation_length(sample.get_samples('sigma')[:,0],min_autocorrelation)
+					mylength=max(mylength1,mylength2)
+				elif q==0 and p>1:
+					mylengthk=np.zeros(p,dtype=int)
+					for k in range(1,p+1):
+						mylengthk[k-1]=decorrelation_length(sample.get_samples('ar_coefs')[:,k],min_autocorrelation)
+					mylength=np.amax(mylengthk)
+					mylength2=decorrelation_length(sample.get_samples('sigma')[:,0],min_autocorrelation)
+					mylength=max(mylength,mylength2)
+				else:
+					mylengthk=np.zeros(p,dtype=int)
+					for k in range(1,p+1):
+						mylengthk[k-1]=decorrelation_length(sample.get_samples('ar_coefs')[:,k],min_autocorrelation)
+					mylengthj=np.zeros(q,dtype=int)
+					for k in range(1,q+1):
+						mylengthj[k-1]=decorrelation_length(sample.get_samples('ma_coefs')[:,k],min_autocorrelation)
+					mylength=max(np.amax(mylengthk),np.amax(mylengthj))
+					mylength2=decorrelation_length(sample.get_samples('sigma')[:,0],min_autocorrelation)
+					mylength=max(mylength,mylength2)
+				try:
+					assert np.isnan(mylength)==False
+				except AssertionError:
+					print "Error: with decorrelation length: You must increase 'min_autocorrelation' input variable"
+					return
+				print "Decorrelation length (in number of samples) - Estimation: ", mylength
 				# second round
 				nmcmc_carma=nmcmc*mylength    # number of MCMC simulations in CARMA pack
 				if nmcmc_carma>nmcmc_carma_max:
 					nmcmc_carma=nmcmc_carma_max
-				if 'n' in signif_level_type:
+				if ('n' in signif_level_type) or ('a' in signif_level_type):
 					print ""
 					print "SECOND ROUND: generates ", nmcmc_carma, " samples"
 					print "***************************************"
-				elif 'a' in signif_level_type:
-					print ""
-					print "Generates ", nmcmc_carma, " samples"
-					print "***********************************"
 				model=cm.CarmaModel(t_carma,y,yerr,p=p,q=q)
 				sample=model.run_mcmc(nmcmc_carma)
 				if make_carma_fig=='yes':
