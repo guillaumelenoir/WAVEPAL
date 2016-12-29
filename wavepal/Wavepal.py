@@ -381,6 +381,48 @@ class Wavepal:
 
 
 
+	def trend_vectors(self):
+		
+		""" trend_vectors computes some arrays concerning the trend of the time series.
+			Inputs:
+			/
+			Outputs:
+			/
+			-----------------------------
+			This is part of WAVEPAL
+			(C) 2016 G. Lenoir"""
+
+		import numpy.linalg as la
+		import copy
+		
+		# check that some functions were previously run
+		try:
+			assert self.run_check_data is True
+		except AssertionError:
+			print "Error: Must have run function 'check_data'"
+			return
+		try:
+			assert self.run_choose_trend_degree is True
+		except AssertionError:
+			print "Error: Must have run function 'choose_trend_degree'"
+			return
+
+		tbis=self.t/self.t[-1]    # for numerical stability with the powers of the time, for the polynomial trend
+		myprojvec=np.zeros((self.nt,self.pol_degree+3))
+		Vmat=np.zeros((self.nt,self.pol_degree+3))
+		for o in range(self.pol_degree+1):
+			myprojvec_o=tbis**o
+			Vmat[:,o]=copy.copy(myprojvec_o)
+			for k in range(o):	# Gram-Schmidt
+				h=myprojvec[:,k]
+				myprojvec_o-=np.dot(h,myprojvec_o)*h
+			myprojvec[:,o]=myprojvec_o/la.norm(myprojvec_o)
+		self.myprojvec=myprojvec
+		self.Vmat=Vmat
+		self.run_trend_vectors=True
+
+
+
 	def carma_params(self,p=1,q=0,signif_level_type="a",min_autocorrelation=0.2,nmcmc=None,nmcmc_carma_max=1000000,make_carma_fig="no",path_to_figure_folder="",nbins=10,maxlag=50,golden_fact=100.,dpi=None):
 		
 		""" carma_params builds all the material related to the CARMA(p,q) background noise. It uses 'carma pack' python package to estimate the parameters of the carma process and to generate MCMC samples. 'carma pack' relies on the following paper:
@@ -772,49 +814,7 @@ class Wavepal:
 						self.beta_unique=medianbeta
 						self.ARMA_mat_unique=np.dot(carma_mat_unique,np.transpose(carma_mat_unique))
 		self.run_carma_params=True
-		
-		
-
-	def trend_vectors(self):
-		
-		""" trend_vectors computes some arrays concerning the trend of the time series.
-			Inputs:
-			/
-			Outputs:
-			/
-			-----------------------------
-			This is part of WAVEPAL
-			(C) 2016 G. Lenoir"""
-
-		import numpy.linalg as la
-		import copy
-		
-		# check that some functions were previously run
-		try:
-			assert self.run_check_data is True
-		except AssertionError:
-			print "Error: Must have run function 'check_data'"
-			return
-		try:
-			assert self.run_choose_trend_degree is True
-		except AssertionError:
-			print "Error: Must have run function 'choose_trend_degree'"
-			return
-
-		tbis=self.t/self.t[-1]    # for numerical stability with the powers of the time, for the polynomial trend
-		myprojvec=np.zeros((self.nt,self.pol_degree+3))
-		Vmat=np.zeros((self.nt,self.pol_degree+3))
-		for o in range(self.pol_degree+1):
-			myprojvec_o=tbis**o
-			Vmat[:,o]=copy.copy(myprojvec_o)
-			for k in range(o):	# Gram-Schmidt
-				h=myprojvec[:,k]
-				myprojvec_o-=np.dot(h,myprojvec_o)*h
-			myprojvec[:,o]=myprojvec_o/la.norm(myprojvec_o)
-		self.myprojvec=myprojvec
-		self.Vmat=Vmat
-		self.run_trend_vectors=True
-
+	
 
 
 	def freq_analysis(self,freqmin=None,freqmax=None,freqstep=None,dt_GCD=None,freq_min_bound='yes',freq_max_bound='yes',mywindow=1,D=None,betafact=0.75,coverage=90.,WOSA_segments=None,percentile=None,weighted_WOSA="yes",n_moments=10,MaxFunEvals=100000,algo_moments='gamma-polynomial',computes_amplitude="no"):
