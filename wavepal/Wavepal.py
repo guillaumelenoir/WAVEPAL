@@ -550,7 +550,7 @@ class Wavepal:
 		self.p=p
 		self.q=q
 		self.signif_level_type=signif_level_type
-		if (signif_level_type=='a' and p=0):
+		if (signif_level_type=='a' and p==0):
 			self.nmcmc=None
 		else:
 			self.nmcmc=nmcmc
