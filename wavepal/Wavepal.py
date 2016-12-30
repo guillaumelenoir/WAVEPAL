@@ -440,9 +440,14 @@ class Wavepal:
 			'A General Theory on Spectral Analysis for Irregularly Sampled Time Series. I. Frequency Analysis', G. Lenoir and M. Crucifix
 			If "n" is in signif_level_type, MCMC confidence levels will be computed in a later step, and carma_params generates MCMC samples of a carma(p,q) time series.
 			If signif_level_type="", confidence levels won't be computed in a later step.
-			- min_autocorrelation=0.2: value of the autocorrelation for the variables of the posterior carma distribution for which the lag is returned. That lag is the 'decorrelation length' of the posteriori distribution, and is used ta skim off the distribution to get decorrelated samples. Typical values are 0.1 or 0.2. For the same final number of samples, the smallest min_autocorrelation is, the longest is the computing time, because a small value for min_autocorrelation means a lot of raw samples to be generated.
-			- nmcmc=None: Number of MCMC samples. If "a" is in signif_level_type, that's the approximate number of samples for the parameters, that are used to compute the median values. If "n" is in signif_level_type, that's the approximate number of generated carma(p,q) time series. Note that, due to the skimming off explained above, a bigger number of MCMC samples is first generated. That number may be limited to save computing time (see nmcmc_carma_max below) but in that case, nmcmc may be automatically adpated toward a smaller value. The final value of nmcmc is, indicated at the terminal. Default initial values: nmcmc=1000 if signif_level_type="a", or nmcmc=10000 if signif_level_type="an" or "n".
-			- nmcmc_carma_max=1000000: Maximum number of MCMC samples in 'carma pack'.
+			- min_autocorrelation=0.2 [Not used if p=q=0]: value of the autocorrelation for the variables of the posterior carma distribution for which the lag is returned. That lag is the 'decorrelation length' of the posteriori distribution, and is used ta skim off the distribution to get decorrelated samples. Typical values are 0.1 or 0.2. For the same final number of samples, the smallest min_autocorrelation is, the longest is the computing time, because a small value for min_autocorrelation means a lot of raw samples to be generated.
+			- nmcmc=None: Number of MCMC samples. 
+                If "a" is in signif_level_type:
+                    If p>0, that's the approximate number of samples for the parameters, that are used to compute the median values. If p=q=0, nmcmc is not used, because this case is fully analytical.
+                If "n" is in signif_level_type: 
+                    If p>0, that's the approximate number of generated carma(p,q) time series. Note that, due to the skimming off explained above, a bigger number of MCMC samples is first generated. That number may be limited to save computing time (see nmcmc_carma_max below) but in that case, nmcmc may be automatically adpated toward a smaller value. The final value of nmcmc is, indicated at the terminal. If p=q=0, that's the exact number of MCMC generated white noise time series.
+                Default initial values: nmcmc=1000 if signif_level_type="a", or nmcmc=10000 if signif_level_type="an" or "n".
+			- nmcmc_carma_max=1000000 [Not used if p=q=0]: Maximum number of MCMC samples in 'carma pack'.
 			- make_carma_fig="no": generates the figures of posterior distributions and the quality of the fit, most of them coming from 'carma pack'. Change to "yes" to activate it.
 			- path_to_figure_folder="": path to the folder where the figures are to be saved. Used if make_carma_fig="yes".
 			- nbins=10: Number of bins for the histogram of the standradized residuals. Used if make_carma_fig="yes".
@@ -545,7 +550,10 @@ class Wavepal:
 		self.p=p
 		self.q=q
 		self.signif_level_type=signif_level_type
-		self.nmcmc=nmcmc
+		if (signif_level_type=='a' and p=0):
+			self.nmcmc=None
+		else:
+			self.nmcmc=nmcmc
 		if ('a' in signif_level_type) or ('n' in signif_level_type):
 			y=self.mydata-self.trend	# Detrend the data for use with carma pack
 			tstart=self.t[0]
@@ -1069,7 +1077,7 @@ class Wavepal:
 						for l in range(npercentile):
 							self.periodogram_cl_mcmc[k,l]=sorted_per[int(mylevel[l])]
 					if 'a' in self.signif_level_type:
-						eig_unique=mytr[0,:]*self.sigwn_unique**2/float(self.nsmooth_vec[k])
+						eig_unique=mytr*self.sigwn_unique**2/float(self.nsmooth_vec[k])
 						for o in range(n_moments):
 							tr_unique[k,o]=np.sum(eig_unique**(o+1))
 						self.pseudo_spectrum_anal[k]=tr_unique[k,0]
