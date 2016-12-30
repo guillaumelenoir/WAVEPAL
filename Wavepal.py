@@ -550,7 +550,10 @@ class Wavepal:
 		self.p=p
 		self.q=q
 		self.signif_level_type=signif_level_type
-		self.nmcmc=nmcmc
+		if (signif_level_type=='a' and p=0):
+			self.nmcmc=None
+		else:
+			self.nmcmc=nmcmc
 		if ('a' in signif_level_type) or ('n' in signif_level_type):
 			y=self.mydata-self.trend	# Detrend the data for use with carma pack
 			tstart=self.t[0]
