@@ -688,7 +688,7 @@ class CarmaSample(samplers.MCMCSample):
                                            arrayToVec(ma_coefs))
         return kfilter, mu
 
-    def assess_fit(self, t_axis_label, mydata_axis_label, t_units, mydata_units, bestfit="map", nplot=256, doShow=True, tstart=0.0, figname="", nbins=10, maxlag=50, dpi=None):
+    def assess_fit(self, t_axis_label, mydata_axis_label, t_units, mydata_units, bestfit="map", nplot=256, doShow=True, tstart=0.0, figname="", nbins=10, maxlag=50, dpi=None, reverse_xaxis=False):
         """
         Display plots and provide useful information for assessing the quality of the CARMA(p,q) model fit.
 
@@ -742,6 +742,10 @@ class CarmaSample(samplers.MCMCSample):
         plt.xlim(self.time.min()+tstart, self.time.max()+tstart)
         # Fin substitution perso
         plt.legend(fancybox=True,fontsize='xx-small',bbox_to_anchor=(1.1, 1.05))
+        # Ajout perso 03/01/2017
+        if reverse_xaxis is True:
+            plt.gca().invert_xaxis()
+        # Fin ajout perso
         if(figname!=""):
             myind=figname.rfind(".")
             plt.savefig(figname[:myind]+"1"+figname[myind:],dpi=dpi)
@@ -792,6 +796,10 @@ class CarmaSample(samplers.MCMCSample):
 		# Ajout perso 02/08/16: alpha=0.5
         plt.barh(bin_edges, pdf, height=bin_edges[1] - bin_edges[0],left=tstart,alpha=0.7,zorder=2)
         # Fin substitution perso
+        # Ajout perso 03/01/2017
+        if reverse_xaxis is True:
+            plt.gca().invert_xaxis()
+        # Fin ajout perso
         if(figname!=""):
             myind=figname.rfind(".")
             plt.savefig(figname[:myind]+"2"+figname[myind:],dpi=dpi)
