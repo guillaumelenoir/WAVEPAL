@@ -14,8 +14,8 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 		- gauss_spread [float]: parameter for the spread of gaussian. 2*gauss_spread*std (where std is the standard dev. of the gaussian) is the approximate SUPPORT (i.e. where the function is not zero) of a gaussian. Typical values are gauss_spread=3.0 (conservative choice) or sqrt(2.0) (value taken in Torrence and Compo, 1998, and some subsequent papers). This is used for the computation of the cone of influence and for the max. allowed scale.
 		- eps [float]: parameter controlling the flexibility on the value of the border of the Shannon-Nyquist exclusion zone. Typical value is eps=1.0e-06. 
 		- dt_GCD [float]: the greatest common divisor of the time steps of the times in 'time'. 
-		- shannonnyquistexclusionzone [str - value='yes' or 'no']: activate or not the Shannon-Nyquist exclusion zone.
-		- weighted_CWT [str - value='yes' or 'no']: 'yes' if weighted scalogram, or 'no' if not.
+		- shannonnyquistexclusionzone [str - value=True or False]: activate or not the Shannon-Nyquist exclusion zone.
+		- weighted_CWT [str - value=True or False]: True if weighted scalogram, or False if not.
 		- smoothing_coeff [float]: smoothing the CWT is performed this way: at a given (tau,scale), the CWT_smoothed is the average of the CWT along neighbouring values of tau (at the same scale). The interval of those neighbouring values of tau is delimited by: tau-smoothing_coeff*std and tau+smoothing_coeff*std, where std is the standard deviation of the gaussian. Note that:
 			-> the std depends on the scale.
 			-> Near the edges of the time series or close the the Shannon-Nyquist exclusion zone, the full interval over tau-smoothing_coeff*std to tau+smoothing_coeff*std cannot be considered. In such case, the CWT_smoothed at (tau,scale) is either ignored (if smoothing_type='fixed') or the interval around tau is shortened (if smoothing_type='variable').
@@ -61,7 +61,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 	scalelim1=np.ones(Q)*dt_GCD/np.pi*(1.+eps)
 	scalelim1_ind=np.zeros(Q,dtype=int)
 	weight_cwt=-np.ones((Q,J))
-	if shannonnyquistexclusionzone=="yes" and weighted_CWT=="yes":
+	if shannonnyquistexclusionzone is True and weighted_CWT is True:
 		for k in trange(Q):
 			tau_k=tau[k]
 			time_ind0=0
@@ -86,7 +86,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 					scalelim1_ind[k]=l+1
 					break
 				weight_cwt[k,l]=np.sqrt(2.*sum(gvec**2)/sum(gvec)**2)
-	elif shannonnyquistexclusionzone=="no" and weighted_CWT=="yes":
+	elif shannonnyquistexclusionzone is False and weighted_CWT is True:
 		for k in trange(Q):
 			tau_k=tau[k]
 			time_ind0=0
@@ -110,7 +110,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 				if scale_l<=dtmp/np.pi*(1.+eps) and Ipass==0:
 					scalelim1[k]=scale[l]
 					Ipass=1
-	elif shannonnyquistexclusionzone=="yes" and weighted_CWT=="no":
+	elif shannonnyquistexclusionzone is True and weighted_CWT is False:
 		for k in trange(Q):
 			tau_k=tau[k]
 			time_ind0=0
@@ -135,7 +135,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 					scalelim1_ind[k]=l+1
 					break
 				weight_cwt[k,l]=1.
-	elif shannonnyquistexclusionzone=="no" and weighted_CWT=="no":
+	elif shannonnyquistexclusionzone is False and weighted_CWT is False:
 		for k in trange(Q):
 			tau_k=tau[k]
 			time_ind0=0
@@ -171,7 +171,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 
 	# Smoothing the CWT => parameters
 	#print "Parameters for smoothing the CWT:"
-	if shannonnyquistexclusionzone=="yes":
+	if shannonnyquistexclusionzone is True:
 		if smoothing_type=="fixed":
 			scalelim1_ind_max=np.amax(scalelim1_ind)-1
 			scalelim1_smooth=copy.copy(scalelim1)
@@ -220,7 +220,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 			coi2_smooth=time[-1]*np.ones(coi2.size)
 			J=scale.size
 			coi_smooth_ind=np.ones(Q,dtype=int)*(J-1)
-	elif shannonnyquistexclusionzone=="no":
+	elif shannonnyquistexclusionzone is False:
 		scalelim1_smooth=copy.copy(scalelim1)
 		scalelim1_ind_smooth=copy.copy(scalelim1_ind)
 		if smoothing_type=="fixed":

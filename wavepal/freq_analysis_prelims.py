@@ -15,16 +15,16 @@ def freq_analysis_prelims(time,freq,D,betafact,mywindow,coverage,freq_min_bound,
 		- betafact [float - value in [0.,1.[]: overlapping factor for the WOSA segments.
 		- mywindow [int]: window choice for the windowing of the WOSA segments. See tapering_window.py for more details.
 		- coverage [float between 0. and 100.]: minimal coverage (in percent) of the data points along the segment length. Below this value, a WOSA segment is not considered. 
-		- freq_min_bound [str - value = 'yes' or 'no']: limit, or not, the lower bound of the frequency range, for each WOSA segment. More details in
+		- freq_min_bound [str - value = True or False]: limit, or not, the lower bound of the frequency range, for each WOSA segment. More details in
 		'A General Theory on Spectral Analysis for Irregularly Sampled Time Series. I. Frequency Analysis', G. Lenoir and M. Crucifix
-		- freq_max_bound [str - value = 'yes' or 'no']: limit, or not, the upper bound of the frequency range, for each WOSA segment. More details in the above cited article.
+		- freq_max_bound [str - value = True or False]: limit, or not, the upper bound of the frequency range, for each WOSA segment. More details in the above cited article.
 		- pol_degree [int]: Degree of the polynomial trend. pol_degree=-1 means no trend.
 		- WOSA_segments [int or str]: Choose the minimal number of WOSA segments to be present at each frequency to take it into account, thus defining the frequency range for the analysis.
 			-> WOSA_segments='all': No restrictions on the number of segments per frequency.
 			-> WOSA_segments='max': Consider only the frequencies for which the number of WOSA segments is maximal. This is the most restrictive case.
 			-> WOSA_segments=None: Consider only the frequencies for which the number of WOSA segments is at least 10, or maximal if there are less than 10 segments.
 			-> WOSA_segments=n (n is an integer): Consider only the frequencies for which the number of WOSA segments is at least n.
-		- weighted_WOSA [str - value = 'yes' or 'no']: 'yes' if weighted periodogram, or 'no' if not.
+		- weighted_WOSA [str - value = True or False]: True if weighted periodogram, or False if not.
 		Outputs:
 		- freq [1-dim numpy array of floats]: frequencies on which the analysis is to be performed. 
 		- tau_considered [1-dim numpy array of floats]: values of the times at which start the WOSA segments. Note that those times are not necessarily equal to values of the vector 'time'.
@@ -86,21 +86,21 @@ def freq_analysis_prelims(time,freq,D,betafact,mywindow,coverage,freq_min_bound,
 			if(per_max/D<coverage):
 				continue
 			# Check the frequency bounds for the WOSA segment
-			if(freq_min_bound=='yes'):
+			if(freq_min_bound is True):
 				kmin=-1
 				for k in range(J):
 					if (1.0/freq[k]<per_max):
 						kmin=k
 						break
-			elif(freq_min_bound=='no'):
+			elif(freq_min_bound is False):
 				kmin=0
-			if(freq_max_bound=='yes'):
+			if(freq_max_bound is True):
 				kmax=-1
 				for k in range(J-1,-1,-1):
 					if (1.0/freq[k]>per_min):
 						kmax=k
 						break
-			elif(freq_max_bound=='no'):
+			elif(freq_max_bound is False):
 				kmax=J-1
 			if (kmin==-1 or kmax==-1):
 				continue    # next iteration for the loop "for l in range(Q)"
@@ -114,7 +114,7 @@ def freq_analysis_prelims(time,freq,D,betafact,mywindow,coverage,freq_min_bound,
 				myind_freq[ll,1]=kmax
 				for k in range(kmin,kmax+1):
 					Qvec[k]+=1
-				if weighted_WOSA=="yes":
+				if weighted_WOSA is True:
 					weight_WOSA[ll]=np.sqrt(2.*np.sum(gvec**2))/np.sum(gvec)
 				else:
 					weight_WOSA[ll]=1.
