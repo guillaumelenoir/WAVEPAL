@@ -805,7 +805,6 @@ class Wavepal:
 					else:
 						mult_sample=int(np.rint(mult_sample))    # number of times each sample of the parameters is repeated in a mcmc loop
 						self.nmcmc=sample_size*mult_sample    # new value for nmcmc (quite close to the user value)
-					print "Actual number of MCMC simulations for the periodogram confidence levels: ", self.nmcmc
 					self.myn=np.zeros((self.nt,self.nmcmc))
 				if self.p==1: # generate CAR(1) processes for MCMC and the matrix with unique params for the analytical case
 					if 'n' in signif_level_type:
@@ -814,6 +813,7 @@ class Wavepal:
 							ofact=range(o*sample_size,(o+1)*sample_size)
 							self.myn[:,ofact]=gen_car1(self.t,alpha,sigwn)
 					if 'a' in signif_level_type:
+						print "Computing the median parameters of the CAR-1 process from ", sigwn.size, " MCMC samples."
 						medianalpha=np.median(alpha)
 						mediansigwn=np.median(sigwn)
 						self.ARMA_mat_unique=carma_matrix_car1(self.t,medianalpha,mediansigwn)
@@ -840,6 +840,7 @@ class Wavepal:
 									myroots=np.roots(alpha[k,:])
 									self.myn[:,ofact+k]=cm.carma_process(self.t,varwn[k],myroots,beta[k,:])
 					if 'a' in signif_level_type:
+						print "Computing the median parameters of the CARMA(",self.p,",",self.q,") process from ", sigwn.size, " MCMC samples."
 						medianalpha=np.median(alpha,0)
 						medianbeta=np.median(beta,0)
 						medianvarwn=np.median(varwn)
@@ -1305,9 +1306,9 @@ class Wavepal:
 			else:
 				countd+=1
 				if (countd==1):
-					plt.plot(myt,y,"r--",label="Not all the frequencies are present",linewidth=linewidth_segment)    # dashed line if not all the frequencies are covered
+					plt.plot(myt,y,"r:",label="Not all the frequencies are present",linewidth=linewidth_segment)    # dashed line if not all the frequencies are covered
 				else:
-					plt.plot(myt,y,"r--",linewidth=linewidth_segment)      # dashed line if not all the frequencies are covered
+					plt.plot(myt,y,"r:",linewidth=linewidth_segment)      # dashed line if not all the frequencies are covered
 		plt.legend(fancybox=True,fontsize=fontsize_legend)
 		plt.xlabel(self.t_axis_label+self.t_label,fontsize=fontsize_axes)
 		plt.ylabel(self.mydata_axis_label+self.mydata_label,fontsize=fontsize_axes)
