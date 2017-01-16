@@ -103,6 +103,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 				hvec=np.exp(-dcon/scale_l**2*mytime**2)
 				dtmp1=sum(hvec*mydt)/sum(hvec)
 				mytime=time[ind0:ind1]-tau_k
+				mydt=dt_centr[ind0:ind1]
 				gvec=np.exp(-dcon/scale_l**2*mytime**2)
 				weight_cwt[k,l]=np.sqrt(2.*sum(gvec**2)/sum(gvec)**2)
 				dtmp2=sum(gvec*mydt)/sum(gvec)
