@@ -1461,7 +1461,7 @@ class Wavepal:
 		elif xaxis=="frequency":
 			plt.xlabel("Frequency"+self.freq_label,fontsize=fontsize_axes)
 		plt.ylabel("Power"+self.power_label,fontsize=fontsize_axes)
-		if self.percentile.size>0:
+		if self.signif_level_type!="" and self.percentile.size>0:
 			plt.suptitle("WOSA periodogram and Confidence levels", fontsize=fontsize_title)
 		else:
 			plt.suptitle("WOSA periodogram", fontsize=fontsize_title)
@@ -1487,6 +1487,7 @@ class Wavepal:
 				-> plt.show(): to draw the figure
 				-> plt.savefig(figname.pdf): to save a figure
 				etc. See matplotlib documentation.
+			Note: If you just want the confidence levels for the F-periodogram, in the method 'carma_params' choose signif_level_type="" and p=q=0. 
 			-----------------------------
 			This is part of WAVEPAL
 			(C) 2016 G. Lenoir"""
@@ -2995,7 +2996,7 @@ class Wavepal:
 		plt.xlabel(self.t_axis_label+self.t_label,fontsize=fontsize_axes)
 		plt.ylabel("Period"+self.t_label,fontsize=fontsize_axes)
 		mytitle="Wavelet Scalogram"
-		if self.percentile_cwt.size>0:
+		if self.signif_level_type!="" and self.percentile_cwt.size>0:
 			mytitle+=" & "
 			for k in range(self.percentile_cwt.size-2):
 				mytitle+=str(self.percentile_cwt[k])
@@ -4561,7 +4562,7 @@ class Wavepal:
 		elif xaxis=="frequency":
 			plt.xlabel("Frequency"+self.freq_label,fontsize=fontsize_axes)
 		plt.ylabel("Power"+self.power_label,fontsize=fontsize_axes)
-		if self.percentile_cwt.size>0:
+		if self.signif_level_type!="" and self.percentile_cwt.size>0:
 			plt.suptitle("Global Scalogram and Confidence levels", fontsize=fontsize_title)
 		else:
 			plt.suptitle("Global Scalogram", fontsize=fontsize_title)
