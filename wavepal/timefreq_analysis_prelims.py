@@ -60,6 +60,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 	dcon=1./2./w0**2
 	scalelim1=np.ones(Q)*dt_GCD/np.pi*(1.+eps)
 	scalelim1_ind=np.zeros(Q,dtype=int)
+	scalelim1_ind_ghost=np.zeros(Q,dtype=int)
 	weight_cwt=-np.ones((Q,J))
 	if shannonnyquistexclusionzone is True and weighted_CWT is True:
 		for k in trange(Q):
@@ -110,6 +111,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 				dtmp=max(dtmp1,dtmp2)
 				if scale_l<=dtmp/np.pi*(1.+eps) and Ipass==0:
 					scalelim1[k]=scale[l]
+					scalelim1_ind_ghost[k]=l+1
 					Ipass=1
 	elif shannonnyquistexclusionzone is True and weighted_CWT is False:
 		for k in trange(Q):
@@ -160,6 +162,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 				weight_cwt[k,l]=1.
 				if scale_l<=dtmp/np.pi*(1.+eps) and Ipass==0:
 					scalelim1[k]=scale[l]
+					scalelim1_ind_ghost[k]=l+1
 					Ipass=1
 
 	# redefine the scale and other variables because new min scale
@@ -222,9 +225,19 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 			J=scale.size
 			coi_smooth_ind=np.ones(Q,dtype=int)*(J-1)
 	elif shannonnyquistexclusionzone is False:
-		scalelim1_smooth=copy.copy(scalelim1)
-		scalelim1_ind_smooth=copy.copy(scalelim1_ind)
 		if smoothing_type=="fixed":
+			scalelim1_ind_smooth=copy.copy(scalelim1_ind)
+			scalelim1_ind_max=np.amax(scalelim1_ind_ghost)-1
+			scalelim1_smooth=copy.copy(scalelim1)
+			for k in range(Q):
+				tau_k=tau[k]
+				for l in range(scalelim1_ind_max,-1,-1):
+					scale_l=scale[l]
+					ind_left=np.argmin(np.absolute(tau-(tau_k-smoothing_coeff*w0*scale_l)))
+					ind_right=np.argmin(np.absolute(tau-(tau_k+smoothing_coeff*w0*scale_l)))
+					if np.sum(scalelim1[ind_left:(ind_right+1)]>=scale_l)>0:
+						scalelim1_smooth[k]=scale[l]
+						break
 			# redefine the scale and other variables because new max scale
 			scalemax=(time[-1]-time[0])/2./w0/(gauss_spread+smoothing_coeff)
 			scalemax_ind=np.argmin(np.absolute(scale-scalemax))
@@ -247,6 +260,8 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 						coi_smooth_ind[k]=l
 						break
 		elif smoothing_type=="variable":
+			scalelim1_smooth=copy.copy(scalelim1)
+			scalelim1_ind_smooth=copy.copy(scalelim1_ind)
 			coi1_smooth=time[0]*np.ones(coi1.size)
 			coi2_smooth=time[-1]*np.ones(coi2.size)
 			J=scale.size
