@@ -56,7 +56,7 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 		timemid[k]=(time[k]+time[k+1])/2.
 
 	# Weights for the CWT squared norm and Shannon-Nyquist exclusion zone
-	print "Weights for the CWT squared norm and Shannon-Nyquist exclusion zone:"
+	print "Weights for the scalogram and Shannon-Nyquist exclusion zone:"
 	dcon=1./2./w0**2
 	scalelim1=np.ones(Q)*dt_GCD/np.pi*(1.+eps)
 	scalelim1_ind=np.zeros(Q,dtype=int)
