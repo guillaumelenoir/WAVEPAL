@@ -379,12 +379,15 @@ class MCMCSample(object):
         # Compute the autocorrelation timescale, and then reset the x-axis limits accordingly
         acf_timescale = self.autocorr_timescale(traces[:, np.newaxis])
         plt.xlim(0, np.min([5 * acf_timescale[0], len(traces)]))
-        if doShow:
-            plt.show()
         # Ajout perso 02/06/2016 (+ajout de "figname" dans les inputs)
         if(figname!=""):
             plt.savefig(figname,dpi=dpi)
-            plt.close()
+            if doShow:
+                plt.show()
+            else:
+                plt.close()
+        elif doShow:
+            plt.show()
         # Fin ajout perso
 
     def posterior_summaries(self, name, mypath, flag):

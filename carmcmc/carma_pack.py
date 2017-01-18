@@ -636,13 +636,15 @@ class CarmaSample(samplers.MCMCSample):
         sp.set_xlabel('Frequency')
         sp.set_ylabel('Power Spectrum')
 
-        if doShow:
-            plt.show()
-
         # Ajout perso 02/06/2016 (+ajout de "figname" dans les inputs)
         if(figname!=""):
             plt.savefig(figname,dpi=dpi)
-            plt.close()
+            if doShow:
+                plt.show()
+            else:
+                plt.close()
+        elif doShow:
+            plt.show()
         # Fin ajout perso
 
         if sp == None:
@@ -749,8 +751,11 @@ class CarmaSample(samplers.MCMCSample):
         if(figname!=""):
             myind=figname.rfind(".")
             plt.savefig(figname[:myind]+"1"+figname[myind:],dpi=dpi)
-            plt.close()
-        if doShow:
+            if doShow:
+                plt.show()
+            else:
+                plt.close()
+        elif doShow:
             plt.show()
 
         # plot the standardized residuals and compare with the standard normal
@@ -803,8 +808,11 @@ class CarmaSample(samplers.MCMCSample):
         if(figname!=""):
             myind=figname.rfind(".")
             plt.savefig(figname[:myind]+"2"+figname[myind:],dpi=dpi)
-            plt.close()
-        if doShow:
+            if doShow:
+                plt.show()
+            else:
+                plt.close()
+        elif doShow:
             plt.show()
 
         # plot the autocorrelation function of the residuals and compare with the 95% confidence intervals for white
@@ -823,8 +831,11 @@ class CarmaSample(samplers.MCMCSample):
         if(figname!=""):
             myind=figname.rfind(".")
             plt.savefig(figname[:myind]+"3"+figname[myind:],dpi=dpi)
-            plt.close()
-        if doShow:
+            if doShow:
+                plt.show()
+            else:
+                plt.close()
+        elif doShow:
             plt.show()
 
 		# plot the autocorrelation function of the residuals and compare with the 95% confidence intervals for white noise
@@ -841,9 +852,12 @@ class CarmaSample(samplers.MCMCSample):
         if(figname!=""):
             myind=figname.rfind(".")
             plt.savefig(figname[:myind]+"4"+figname[myind:],dpi=dpi)
-            plt.close()
-        if doShow:
-	        plt.show()
+            if doShow:
+                plt.show()
+            else:
+                plt.close()
+        elif doShow:
+            plt.show()
 
         if not doShow:
             return fig1, fig2, fig3, fig4
@@ -1102,13 +1116,15 @@ class Car1Sample(CarmaSample):
         sp.set_xlabel('Frequency')
         sp.set_ylabel('Power Spectrum')
 
-        if doShow:
-            plt.show()
-
         # Ajout perso 02/06/2016 (+ajout de "figname" dans les inputs)
         if(figname!=""):
             plt.savefig(figname,dpi=dpi)
-            plt.close()
+            if doShow:
+                plt.show()
+            else:
+                plt.close()
+        elif doShow:
+            plt.show()
         # Fin ajout perso
 
         if sp == None:
