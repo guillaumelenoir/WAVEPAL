@@ -2489,7 +2489,8 @@ class Wavepal:
 			elif weighted_CWT is False:
 				mystd_scalelim1_smooth_scal=np.zeros(Q)
 				for k in range(Q):
-					myfun=lambda xx: xx*np.exp(-((2.*np.pi/self.perlim1_smooth_cwt[k]*xx-1.)**2)*w0**2)-self.perlim1_smooth_cwt[k]*(w0+np.sqrt(w0**2+2.))/4./np.pi/w0*np.exp(-gauss_spread**2/2.)
+					scale_max_k=self.perlim1_smooth_cwt[k]*(w0+np.sqrt(w0**2+2.))/4./np.pi/w0
+					myfun=lambda xx: xx*np.exp(-((2.*np.pi/self.perlim1_smooth_cwt[k]*xx-1.)**2)*w0**2)-scale_max_k*np.exp(-((2.*np.pi/self.perlim1_smooth_cwt[k]*scale_max_k-1.)**2)*w0**2)*np.exp(-gauss_spread**2/2.)
 					scalelim2_smooth_scal[k], rootresults=brenth(myfun,scalelim1_smooth[k],scale[-1],maxiter=1000,full_output=True,disp=False) # brenth is a scipy root finding algorithm
 					if rootresults.converged==False:
 						scalelim2_smooth_scal[k]=scale[-1]
