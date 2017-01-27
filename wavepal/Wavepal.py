@@ -1948,7 +1948,7 @@ class Wavepal:
 		
 		""" timefreq_analysis computes the (smoothed) scalogram and its confidence levels and the amplitude scalogram.
 			Optional Inputs:
-			- theta=None: the times at which the CWT is computed. Default is theta=np.linspace(t[0],t[-1],t.size), where t is the time vector of the data. N.B.: theta may be irregularly sampled.
+			- theta=None: the times at which the CWT is computed. Default is theta=np.linspace(t[0],t[-1],t.size), where t is the time vector of the data. N.B.: theta may be irregularly sampled, although we recommend a regular grid.
 			- permin=None: minimal period. Default value is approximately permin=2.*dt_GCD (see below for the definition of dt_GCD).
 			- permax=None: maximal period. Default value is approximately permax=np.pi*(t[-1]-t[0])/w0/gauss_spread, where t is the time vector of the data. w0 and gauss_spread are defined below.
 			N.B.: I wrote "approximately" because of the way the CWT is weighted. Concerning the provided values 'permin' and 'permax', a deviation up to 2% is possible.
