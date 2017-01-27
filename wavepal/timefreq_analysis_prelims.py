@@ -196,13 +196,6 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 			weight_cwt=copy.copy(weight_cwt[:,min_scalelim1_ind_smooth:])
 			scalelim1_ind[:]=scalelim1_ind[:]-min_scalelim1_ind_smooth
 			scalelim1_ind_smooth[:]=scalelim1_ind_smooth[:]-min_scalelim1_ind_smooth
-			# redefine the scale and other variables because new max scale
-			scalemax=(time[-1]-time[0])/2./w0/(gauss_spread+smoothing_coeff)
-			scalemax_ind=np.argmin(np.absolute(scale-scalemax))
-			scale=copy.copy(scale[:(scalemax_ind+1)])
-			weight_cwt=copy.copy(weight_cwt[:,:(scalemax_ind+1)])
-			scalelim1_ind[scalelim1_ind>scalemax_ind]=scalemax_ind
-			scalelim1_ind_smooth[scalelim1_ind_smooth>scalemax_ind]=scalemax_ind
 			# Redefine the cone of influence
 			coi1_smooth=tau[0]+smoothing_coeff*w0*scale
 			coi2_smooth=tau[-1]-smoothing_coeff*w0*scale
@@ -238,13 +231,6 @@ def timefreq_analysis_prelims(time,tau,scale,w0,gauss_spread,eps,dt_GCD,shannonn
 					if np.sum(scalelim1[ind_left:(ind_right+1)]>=scale_l)>0:
 						scalelim1_smooth[k]=scale[l]
 						break
-			# redefine the scale and other variables because new max scale
-			scalemax=(time[-1]-time[0])/2./w0/(gauss_spread+smoothing_coeff)
-			scalemax_ind=np.argmin(np.absolute(scale-scalemax))
-			scale=copy.copy(scale[:(scalemax_ind+1)])
-			weight_cwt=copy.copy(weight_cwt[:,:(scalemax_ind+1)])
-			scalelim1_ind[scalelim1_ind>scalemax_ind]=scalemax_ind
-			scalelim1_ind_smooth[scalelim1_ind_smooth>scalemax_ind]=scalemax_ind
 			# Redefine the cone of influence
 			coi1_smooth=tau[0]+smoothing_coeff*w0*scale
 			coi2_smooth=tau[-1]-smoothing_coeff*w0*scale

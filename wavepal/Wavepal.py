@@ -2135,7 +2135,7 @@ class Wavepal:
 		if scalemin is None:
 			scalemin=dt_GCD/np.pi*(1.+eps)
 		if scalemax is None:
-			scalemax=(self.t[-1]-self.t[0])/2./w0/gauss_spread
+			scalemax=(self.t[-1]-self.t[0])/2./w0/(gauss_spread+smoothing_coeff)
 		if theta is None:
 			self.theta=np.linspace(self.t[0],self.t[-1],self.t.size)
 		else:
@@ -2160,7 +2160,7 @@ class Wavepal:
 			return
 		# Adjust scalemin and scalemax and builds the scale vector
 		scalemin=np.maximum(dt_GCD/np.pi*(1.+eps),scalemin)
-		scalemax=np.minimum((self.t[-1]-self.t[0])/2./w0/gauss_spread,scalemax)
+		scalemax=np.minimum((self.t[-1]-self.t[0])/2./w0/(gauss_spread+smoothing_coeff),scalemax)
 		J=int(np.floor(np.log2(scalemax/scalemin)/deltaj))
 		scale=np.zeros(J+1)
 		for k in range(J+1):
