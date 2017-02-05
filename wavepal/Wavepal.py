@@ -235,12 +235,13 @@ class Wavepal:
 
 
 
-	def plot_timestep(self,hist=True,nbins=10,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,reverse_xaxis=False):
+	def plot_timestep(self,hist=True,nbins=10,log_yaxis=False,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,reverse_xaxis=False):
 	
 		""" plot_timestep computes and generates the figure of the time step in function of time.
 			Optional Inputs:
 			- hist=True: if True, draws the histogram of the distribution of the time steps.
 			- nbins=10: number of bins for the histogram.
+			- log_yaxis=False: If True, the vertical axis is in log scale.
 			- fontsize_title=14: fontsize for the figure title.
 			- fontsize_axes=12: fontsize for the figure axes.
 			- fontsize_ticks=12: fontsize for the figure ticks.
@@ -268,6 +269,11 @@ class Wavepal:
 			print "Error at input 'nbins': must be of type 'int' and >0"
 			return
 		try:
+			assert type(log_yaxis) is bool
+		except AssertionError:
+			print "Error at input 'log_yaxis': must be True or False"
+			return
+		try:
 			assert type(reverse_xaxis) is bool
 		except AssertionError:
 			print "Error at input 'reverse_xaxis': must be True or False"
@@ -281,7 +287,10 @@ class Wavepal:
 		self.dt=np.zeros(self.nt-1)
 		for k in range(1,self.nt):
 			self.dt[k-1]=self.t[k]-self.t[k-1]
-		plt.plot(self.t[1:],self.dt,"k.",zorder=1)
+		if log_yaxis is True:
+			plt.semilogy(self.t[1:],self.dt,"k.",zorder=1)
+		else:
+			plt.plot(self.t[1:],self.dt,"k.",zorder=1)
 		plt.xlabel(self.t_axis_label+self.t_label,fontsize=fontsize_axes)
 		plt.xlim(self.t[1], self.t[-1])
 		plt.ylabel(self.t_axis_label+" step"+self.t_label,fontsize=fontsize_axes)
