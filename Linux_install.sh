@@ -21,6 +21,10 @@ cd ../..
 echo "Install WAVEPAL"
 python setup.py install --user
 
+mv carmcmc carmcmc_pack
+mv wavepal wavepal_pack
+sudo rm -r carma_pack
+
 echo "****************"
 echo "* Test on data *"
 echo "****************"
