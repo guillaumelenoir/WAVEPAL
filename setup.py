@@ -36,6 +36,6 @@ setup(
     ],
     keywords='WAVEPAL setuptools development',
     packages=find_packages(exclude=['carmcmc', 'test', 'examples']),
-    install_requires=['numpy', 'scipy', 'tqdm', 'carmcmc'],
+    install_requires=['numpy', 'scipy', 'tqdm', 'carmcmc', 'matplotlib', 'acor'],
     zip_safe=True,
 )
