@@ -22,7 +22,7 @@ plot_trend.savefig(path_to_figure_folder+"trend.pdf")
 plot_trend.close()
 x.choose_trend_degree(7)
 x.trend_vectors()
-x.carma_params(make_carma_fig="yes",nbins=20,dpi=400,path_to_figure_folder=path_to_figure_folder)
+x.carma_params(make_carma_fig=True,nbins=20,dpi=400,path_to_figure_folder=path_to_figure_folder)
 percentile=np.zeros(2)
 percentile[0]=95.
 percentile[1]=99.9
