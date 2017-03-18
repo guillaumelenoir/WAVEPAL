@@ -2752,7 +2752,7 @@ class Wavepal:
 
 
 
-	def plot_scalogram(self,with_global_scalogram=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,color_cl_anal=None,color_cl_mcmc=None,linewidth_cl=2,global_scal_xlabel="top",global_scal_xlabel_ticks="top",linewidth_gscal=1.0,linewidth_gcl=1.0,cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,reverse_xaxis=False,reverse_yaxis=False):
+	def plot_scalogram(self,with_global_scalogram=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,color_cl_anal=None,color_cl_mcmc=None,linewidth_cl=2,global_scal_xlabel="top",global_scal_xlabel_ticks="top",linewidth_gscal=1.0,linewidth_gcl=1.0,cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
 		
 		""" plot_scalogram generates the figure of the scalogram and its confidence levels. It also generates the figure of the global scalogram and its confidence levels.
 			Optional Inputs:
@@ -2784,6 +2784,7 @@ class Wavepal:
 			- linewidth_perlim2=1.0: linewidth for perlim2 (if plot_perlim2="line").
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
+			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -2944,6 +2945,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'reverse_yaxis': must be True or False"
 			return
+		try:
+			assert ((type(alpha_SNEZ) is float) or (type(alpha_SNEZ) is int)) and (alpha_SNEZ>=0 and alpha_SNEZ<=1)
+		except AssertionError:
+			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -2997,7 +3003,7 @@ class Wavepal:
 			elif plot_perlim2=="line":
 				plt.plot(self.theta,np.log2(self.perlim2_smooth_scal),'k')
 		elif self.shannonnyquistexclusionzone is False:
-			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=0.5)
+			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=alpha_SNEZ)
 		ax = plt.gca()
 		ax.tick_params(length=5, width=1, color='w')
 		if dashed_periods is not None:
@@ -3161,7 +3167,7 @@ class Wavepal:
 						 
 						 
 
-	def plot_pseudo_cwtspectrum_anal(self,with_pseudo_global_spectrum_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_anal_xlabel="top",pseudo_global_spectrum_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False):
+	def plot_pseudo_cwtspectrum_anal(self,with_pseudo_global_spectrum_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_anal_xlabel="top",pseudo_global_spectrum_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
 		
 		""" plot_pseudo_cwtspectrum_anal generates the figure of the analytical pseudo-cwtspectrum. It also generates the figure of the global analytical pseudo-cwtspectrum. Only available if 'a' is in signif_level_type (see 'carma_params).
 			Optional Inputs:
@@ -3188,6 +3194,7 @@ class Wavepal:
 			- linewidth_gspec=1.0: linewidth for the global analytical pseudo-cwtspectrum
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
+			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3316,6 +3323,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'reverse_yaxis': must be True or False"
 			return
+		try:
+			assert ((type(alpha_SNEZ) is float) or (type(alpha_SNEZ) is int)) and (alpha_SNEZ>=0 and alpha_SNEZ<=1)
+		except AssertionError:
+			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -3363,7 +3375,7 @@ class Wavepal:
 			elif plot_perlim2=="line":
 				plt.plot(self.theta,np.log2(self.perlim2_smooth_scal),'k')
 		elif self.shannonnyquistexclusionzone is False:
-			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=0.5)
+			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=alpha_SNEZ)
 		ax = plt.gca()
 		ax.tick_params(length=5, width=1, color='w')
 		plt.xlabel(self.t_axis_label+self.t_label,fontsize=fontsize_axes)
@@ -3407,7 +3419,7 @@ class Wavepal:
 
 
 						 
-	def plot_pseudo_cwtspectrum_mcmc(self,with_pseudo_global_spectrum_mcmc=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_mcmc_xlabel="top",pseudo_global_spectrum_mcmc_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False):
+	def plot_pseudo_cwtspectrum_mcmc(self,with_pseudo_global_spectrum_mcmc=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_mcmc_xlabel="top",pseudo_global_spectrum_mcmc_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
 		
 		""" plot_pseudo_cwtspectrum_mcmc generates the figure of the MCMC pseudo-cwtspectrum. It also generates the figure of the global MCMC pseudo-cwtspectrum. Only available if 'n' is in signif_level_type (see 'carma_params).
 			Optional Inputs:
@@ -3434,6 +3446,7 @@ class Wavepal:
 			- linewidth_gspec=1.0: linewidth for the global MCMC pseudo-cwtspectrum.
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
+			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3562,6 +3575,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'reverse_yaxis': must be True or False"
 			return
+		try:
+			assert ((type(alpha_SNEZ) is float) or (type(alpha_SNEZ) is int)) and (alpha_SNEZ>=0 and alpha_SNEZ<=1)
+		except AssertionError:
+			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -3609,7 +3627,7 @@ class Wavepal:
 			elif plot_perlim2=="line":
 				plt.plot(self.theta,np.log2(self.perlim2_smooth_scal),'k')
 		elif self.shannonnyquistexclusionzone is False:
-			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=0.5)
+			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=alpha_SNEZ)
 		ax = plt.gca()
 		ax.tick_params(length=5, width=1, color='w')
 		plt.xlabel(self.t_axis_label+self.t_label,fontsize=fontsize_axes)
@@ -3653,7 +3671,7 @@ class Wavepal:
 						 
 						 
 						 
-	def plot_cwt_variance_anal(self,with_global_scalogram_variance_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_scalogram_variance_anal_xlabel="top",global_scalogram_variance_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gscal=1.0,reverse_xaxis=False,reverse_yaxis=False):
+	def plot_cwt_variance_anal(self,with_global_scalogram_variance_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_scalogram_variance_anal_xlabel="top",global_scalogram_variance_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gscal=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
 
 		""" plot_cwt_variance_anal generates the figure of the variance of the scalogram of the analytical background noise. It also generates the figure of the global variance. Only available if 'a' is in signif_level_type (see 'carma_params) and weighted_CWT is False (see 'timefreq_analysis').
 			Optional Inputs:
@@ -3680,6 +3698,7 @@ class Wavepal:
 			- linewidth_gscal=1.0: linewidth for the global scalogram.
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
+			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3808,6 +3827,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'reverse_yaxis': must be True or False"
 			return
+		try:
+			assert ((type(alpha_SNEZ) is float) or (type(alpha_SNEZ) is int)) and (alpha_SNEZ>=0 and alpha_SNEZ<=1)
+		except AssertionError:
+			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -3855,7 +3879,7 @@ class Wavepal:
 			elif plot_perlim2=="line":
 				plt.plot(self.theta,np.log2(self.perlim2_smooth_scal),'k')
 		elif self.shannonnyquistexclusionzone is False:
-			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=0.5)
+			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=alpha_SNEZ)
 		ax = plt.gca()
 		ax.tick_params(length=5, width=1, color='w')
 		plt.xlabel(self.t_axis_label+self.t_label,fontsize=fontsize_axes)
@@ -3899,7 +3923,7 @@ class Wavepal:
 
 
 						 
-	def plot_cwtamplitude(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False):
+	def plot_cwtamplitude(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
 		
 		""" plot_cwtamplitude generates the figure of the amplitude scalogram. It also generates the figure of the global amplitude scalogram. Only available if computes_amplitude is True (see 'timefreq_analysis').
 			Optional Inputs:
@@ -3930,6 +3954,7 @@ class Wavepal:
 			- linewidth_gampl=1.0: linewidth for the global amplitude scalogram.
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
+			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -4078,6 +4103,11 @@ class Wavepal:
 			assert type(reverse_yaxis) is bool
 		except AssertionError:
 			print "Error at input 'reverse_yaxis': must be True or False"
+			return
+		try:
+			assert ((type(alpha_SNEZ) is float) or (type(alpha_SNEZ) is int)) and (alpha_SNEZ>=0 and alpha_SNEZ<=1)
+		except AssertionError:
+			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
 			return
 		# check that some functions were previously run
 		try:
@@ -4142,7 +4172,7 @@ class Wavepal:
 			elif plot_perlim2=="line":
 				plt.plot(self.theta,np.log2(self.perlim2_smooth_ampl),'k')
 		elif self.shannonnyquistexclusionzone is False:
-			plt.fill_between(self.theta,np.log2(self.period_ampl[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_ampl),edgecolors=None,facecolor='black',alpha=0.5)
+			plt.fill_between(self.theta,np.log2(self.period_ampl[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_ampl),edgecolors=None,facecolor='black',alpha=alpha_SNEZ)
 		ax = plt.gca()
 		ax.tick_params(length=5, width=1, color='w')
 		if dashed_periods is not None:
@@ -4193,7 +4223,7 @@ class Wavepal:
 						 
 						 
 						 
-	def plot_cwtamplitude_squared(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False):
+	def plot_cwtamplitude_squared(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
 		
 		""" plot_cwtamplitude_squared generates the figure of the squared amplitude scalogram. It also generates the figure of the global squared amplitude scalogram. Only available if computes_amplitude is True (see 'timefreq_analysis').
 			Optional Inputs:
@@ -4224,6 +4254,7 @@ class Wavepal:
 			- linewidth_gampl=1.0: linewidth for the global squared amplitude scalogram.
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
+			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -4373,6 +4404,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'reverse_yaxis': must be True or False"
 			return
+		try:
+			assert ((type(alpha_SNEZ) is float) or (type(alpha_SNEZ) is int)) and (alpha_SNEZ>=0 and alpha_SNEZ<=1)
+		except AssertionError:
+			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -4436,7 +4472,7 @@ class Wavepal:
 			elif plot_perlim2=="line":
 				plt.plot(self.theta,np.log2(self.perlim2_smooth_scal),'k')
 		elif self.shannonnyquistexclusionzone is False:
-			plt.fill_between(self.theta,np.log2(self.period_ampl[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_ampl),edgecolors=None,facecolor='black',alpha=0.5)
+			plt.fill_between(self.theta,np.log2(self.period_ampl[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_ampl),edgecolors=None,facecolor='black',alpha=alpha_SNEZ)
 		ax = plt.gca()
 		ax.tick_params(length=5, width=1, color='w')
 		if dashed_periods is not None:
