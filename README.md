@@ -47,6 +47,15 @@ and that is all!
 
 Python 2.7 and all the dependencies of WAVEPAL are installed. Type `python2.7` instead of `python` at the terminal when you call python. Feel free to modify the installation file.
 
+### Tips
+In the last part of the installation process, a test file is run to check that all is okay. It is indicated by 
+```
+****************
+* Test on data *
+****************
+```
+Just before the test, the paths towards the built-in packages are showed, and python may choose to take old versions, that you had already installed. If you encounter troubles with some pacakges during the test, I recommend to delete old versions (whose path is given), and reinstall WAVEPAL.
+
 ------------
 
 ## Examples
