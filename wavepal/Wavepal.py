@@ -2752,7 +2752,7 @@ class Wavepal:
 
 
 
-	def plot_scalogram(self,with_global_scalogram=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,color_cl_anal=None,color_cl_mcmc=None,linewidth_cl=2,global_scal_xlabel="top",global_scal_xlabel_ticks="top",linewidth_gscal=1.0,linewidth_gcl=1.0,cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
+	def plot_scalogram(self,with_global_scalogram=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,color_cl_anal=None,color_cl_mcmc=None,linewidth_cl=2,global_scal_xlabel="top",global_scal_xlabel_ticks="top",linewidth_gscal=1.0,linewidth_gcl=1.0,cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
 		
 		""" plot_scalogram generates the figure of the scalogram and its confidence levels. It also generates the figure of the global scalogram and its confidence levels.
 			Optional Inputs:
@@ -2785,6 +2785,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -2950,6 +2951,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
 			return
+		try:
+			assert (type(decimals) is int) and decimals>=0
+		except AssertionError:
+			print "Error at input 'decimals': must be an integer >=0"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -2980,7 +2986,10 @@ class Wavepal:
 			color_cl_anal=['m']*self.percentile_cwt.size
 		if color_cl_mcmc is None:
 			color_cl_mcmc=['g']*self.percentile_cwt.size
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.scalogram),nlevels,vmin=self.minscal,vmax=self.maxscal,cmap=cmap)
+		minminscal=np.amin(np.amin(self.scalogram))
+		maxmaxscal=np.amax(np.amax(self.scalogram))
+		mynlevels=int(float(nlevels)/(self.maxscal-self.minscal)*(maxmaxscal-minminscal))
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.scalogram),mynlevels,vmin=self.minscal,vmax=self.maxscal,cmap=cmap)
 		for k in range(self.percentile_cwt.size):
 			if 'a' in self.signif_level_type:
 				cv_anal=self.scalogram/self.scalogram_cl_anal[:,:,k]
@@ -3071,9 +3080,24 @@ class Wavepal:
 				plt.tick_params(axis='x', labelbottom='on', labeltop='off', labelsize=fontsize_ticks)
 			if reverse_yaxis is True:
 				plt.gca().invert_yaxis()
+		# Colorbar and its rescaling: min and max of the levels of color are defined over the non-shaded regions
 		cbar=plt.colorbar(mycontourf)
 		cbar.ax.set_ylabel("Power"+self.power_label,fontsize=fontsize_axes)
 		cbar.ax.tick_params(labelsize=fontsize_ticks)
+		cbar.set_clim(minminscal,maxmaxscal)
+		my_color_ticks=np.linspace(minminscal,maxmaxscal,10)
+		cbar.set_ticks(my_color_ticks)
+		my_color_ticklabels=np.linspace(self.minscal,self.maxscal,10)
+		my_power_color_ticklabels=float(10**(int(np.floor(np.log10(my_color_ticklabels[-1])))))
+		my_color_ticklabels=[el/my_power_color_ticklabels for el in my_color_ticklabels]
+		my_color_ticklabels=np.around(my_color_ticklabels,decimals=decimals)
+		mystring=' '.join(str(e) for e in my_color_ticklabels).split(' ')
+		if ('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0]):
+			mystring[0]="<="+mystring[0]
+		mystring[-1]=">="+mystring[-1]
+		cbar.set_ticklabels(mystring)
+		if int(np.log10(my_power_color_ticklabels))!=0:
+			cbar.ax.set_title('1e'+str(int(np.log10(my_power_color_ticklabels))),fontsize=fontsize_ticks)
 		return plt
 
 
@@ -3167,7 +3191,7 @@ class Wavepal:
 						 
 						 
 
-	def plot_pseudo_cwtspectrum_anal(self,with_pseudo_global_spectrum_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_anal_xlabel="top",pseudo_global_spectrum_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
+	def plot_pseudo_cwtspectrum_anal(self,with_pseudo_global_spectrum_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_anal_xlabel="top",pseudo_global_spectrum_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
 		
 		""" plot_pseudo_cwtspectrum_anal generates the figure of the analytical pseudo-cwtspectrum. It also generates the figure of the global analytical pseudo-cwtspectrum. Only available if 'a' is in signif_level_type (see 'carma_params).
 			Optional Inputs:
@@ -3195,6 +3219,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3328,6 +3353,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
 			return
+		try:
+			assert (type(decimals) is int) and decimals>=0
+		except AssertionError:
+			print "Error at input 'decimals': must be an integer >=0"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -3359,7 +3389,10 @@ class Wavepal:
 			gs1 = gridspec.GridSpec(1,5)
 			gs1.update(left=0.05+left_padding)
 			plt.subplot(gs1[0,:-1])
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.pseudo_cwtspectrum_anal),nlevels,vmin=self.min_pseudo_cwtspectrum_anal,vmax=self.max_pseudo_cwtspectrum_anal)
+		minmin_pseudo_cwtspectrum_anal=np.amin(np.amin(self.pseudo_cwtspectrum_anal))
+		maxmax_pseudo_cwtspectrum_anal=np.amax(np.amax(self.pseudo_cwtspectrum_anal))
+		mynlevels=int(float(nlevels)/(self.max_pseudo_cwtspectrum_anal-self.min_pseudo_cwtspectrum_anal)*(maxmax_pseudo_cwtspectrum_anal-minmin_pseudo_cwtspectrum_anal))
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.pseudo_cwtspectrum_anal),mynlevels,vmin=self.min_pseudo_cwtspectrum_anal,vmax=self.max_pseudo_cwtspectrum_anal)
 		if plot_coi=="fill":
 			plt.fill_betweenx(np.log2(self.period_cwt),self.t[0],self.coi1,edgecolors=None,facecolor='black',alpha=0.5)
 			plt.fill_betweenx(np.log2(self.period_cwt),self.coi2,self.t[-1],edgecolors=None,facecolor='black',alpha=0.5)
@@ -3412,14 +3445,29 @@ class Wavepal:
 				plt.tick_params(axis='x', labelbottom='on', labeltop='off', labelsize=fontsize_ticks)
 			if reverse_yaxis is True:
 				plt.gca().invert_yaxis()
+		# Colorbar and its rescaling: min and max of the levels of color are defined over the non-shaded regions
 		cbar=plt.colorbar(mycontourf)
 		cbar.ax.set_ylabel("Power"+self.power_label,fontsize=fontsize_axes)
 		cbar.ax.tick_params(labelsize=fontsize_ticks)
+		cbar.set_clim(minmin_pseudo_cwtspectrum_anal,maxmax_pseudo_cwtspectrum_anal)
+		my_color_ticks=np.linspace(minmin_pseudo_cwtspectrum_anal,maxmax_pseudo_cwtspectrum_anal,10)
+		cbar.set_ticks(my_color_ticks)
+		my_color_ticklabels=np.linspace(self.min_pseudo_cwtspectrum_anal,self.max_pseudo_cwtspectrum_anal,10)
+		my_power_color_ticklabels=float(10**(int(np.floor(np.log10(my_color_ticklabels[-1])))))
+		my_color_ticklabels=[el/my_power_color_ticklabels for el in my_color_ticklabels]
+		my_color_ticklabels=np.around(my_color_ticklabels,decimals=decimals)
+		mystring=' '.join(str(e) for e in my_color_ticklabels).split(' ')
+		if ('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0]):
+			mystring[0]="<="+mystring[0]
+		mystring[-1]=">="+mystring[-1]
+		cbar.set_ticklabels(mystring)
+		if int(np.log10(my_power_color_ticklabels))!=0:
+			cbar.ax.set_title('1e'+str(int(np.log10(my_power_color_ticklabels))),fontsize=fontsize_ticks)
 		return plt
 
 
 						 
-	def plot_pseudo_cwtspectrum_mcmc(self,with_pseudo_global_spectrum_mcmc=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_mcmc_xlabel="top",pseudo_global_spectrum_mcmc_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
+	def plot_pseudo_cwtspectrum_mcmc(self,with_pseudo_global_spectrum_mcmc=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_mcmc_xlabel="top",pseudo_global_spectrum_mcmc_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
 		
 		""" plot_pseudo_cwtspectrum_mcmc generates the figure of the MCMC pseudo-cwtspectrum. It also generates the figure of the global MCMC pseudo-cwtspectrum. Only available if 'n' is in signif_level_type (see 'carma_params).
 			Optional Inputs:
@@ -3447,6 +3495,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
+			- - decimals=3: Numbers of decimals for the colorbar scale ticks.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3580,6 +3629,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
 			return
+		try:
+			assert (type(decimals) is int) and decimals>=0
+		except AssertionError:
+			print "Error at input 'decimals': must be an integer >=0"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -3611,7 +3665,10 @@ class Wavepal:
 			gs1 = gridspec.GridSpec(1,5)
 			gs1.update(left=0.05+left_padding)
 			plt.subplot(gs1[0,:-1])
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.pseudo_cwtspectrum_mcmc),nlevels,vmin=self.min_pseudo_cwtspectrum_mcmc,vmax=self.max_pseudo_cwtspectrum_mcmc)
+		minmin_pseudo_cwtspectrum_mcmc=np.amin(np.amin(self.pseudo_cwtspectrum_mcmc))
+		maxmax_pseudo_cwtspectrum_mcmc=np.amax(np.amax(self.pseudo_cwtspectrum_mcmc))
+		mynlevels=int(float(nlevels)/(self.max_pseudo_cwtspectrum_mcmc-self.min_pseudo_cwtspectrum_mcmc)*(maxmax_pseudo_cwtspectrum_mcmc-minmin_pseudo_cwtspectrum_mcmc))
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.pseudo_cwtspectrum_mcmc),mynlevels,vmin=self.min_pseudo_cwtspectrum_mcmc,vmax=self.max_pseudo_cwtspectrum_mcmc)
 		if plot_coi=="fill":
 			plt.fill_betweenx(np.log2(self.period_cwt),self.t[0],self.coi1,edgecolors=None,facecolor='black',alpha=0.5)
 			plt.fill_betweenx(np.log2(self.period_cwt),self.coi2,self.t[-1],edgecolors=None,facecolor='black',alpha=0.5)
@@ -3664,14 +3721,29 @@ class Wavepal:
 				plt.tick_params(axis='x', labelbottom='on', labeltop='off', labelsize=fontsize_ticks)
 			if reverse_yaxis is True:
 				plt.gca().invert_yaxis()
+		# Colorbar and its rescaling: min and max of the levels of color are defined over the non-shaded regions
 		cbar=plt.colorbar(mycontourf)
 		cbar.ax.set_ylabel("Power"+self.power_label,fontsize=fontsize_axes)
 		cbar.ax.tick_params(labelsize=fontsize_ticks)
+		cbar.set_clim(minmin_pseudo_cwtspectrum_mcmc,maxmax_pseudo_cwtspectrum_mcmc)
+		my_color_ticks=np.linspace(minmin_pseudo_cwtspectrum_mcmc,maxmax_pseudo_cwtspectrum_mcmc,10)
+		cbar.set_ticks(my_color_ticks)
+		my_color_ticklabels=np.linspace(self.min_pseudo_cwtspectrum_mcmc,self.max_pseudo_cwtspectrum_mcmc,10)
+		my_power_color_ticklabels=float(10**(int(np.floor(np.log10(my_color_ticklabels[-1])))))
+		my_color_ticklabels=[el/my_power_color_ticklabels for el in my_color_ticklabels]
+		my_color_ticklabels=np.around(my_color_ticklabels,decimals=decimals)
+		mystring=' '.join(str(e) for e in my_color_ticklabels).split(' ')
+		if ('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0]):
+			mystring[0]="<="+mystring[0]
+		mystring[-1]=">="+mystring[-1]
+		cbar.set_ticklabels(mystring)
+		if int(np.log10(my_power_color_ticklabels))!=0:
+			cbar.ax.set_title('1e'+str(int(np.log10(my_power_color_ticklabels))),fontsize=fontsize_ticks)
 		return plt
 						 
 						 
 						 
-	def plot_cwt_variance_anal(self,with_global_scalogram_variance_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_scalogram_variance_anal_xlabel="top",global_scalogram_variance_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gscal=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
+	def plot_cwt_variance_anal(self,with_global_scalogram_variance_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_scalogram_variance_anal_xlabel="top",global_scalogram_variance_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gscal=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
 
 		""" plot_cwt_variance_anal generates the figure of the variance of the scalogram of the analytical background noise. It also generates the figure of the global variance. Only available if 'a' is in signif_level_type (see 'carma_params) and weighted_CWT is False (see 'timefreq_analysis').
 			Optional Inputs:
@@ -3699,6 +3771,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3832,6 +3905,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
 			return
+		try:
+			assert (type(decimals) is int) and decimals>=0
+		except AssertionError:
+			print "Error at input 'decimals': must be an integer >=0"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -3863,7 +3941,10 @@ class Wavepal:
 			gs1 = gridspec.GridSpec(1,5)
 			gs1.update(left=0.05+left_padding)
 			plt.subplot(gs1[0,:-1])
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.cwt_variance_anal),nlevels,vmin=self.min_cwt_variance_anal,vmax=self.max_cwt_variance_anal)
+		minmin_cwt_variance_anal=np.amin(np.amin(self.cwt_variance_anal))
+		maxmax_cwt_variance_anal=np.amax(np.amax(self.cwt_variance_anal))
+		mynlevels=int(float(nlevels)/(self.max_cwt_variance_anal-self.min_cwt_variance_anal)*(maxmax_cwt_variance_anal-minmin_cwt_variance_anal))
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.cwt_variance_anal),mynlevels,vmin=self.min_cwt_variance_anal,vmax=self.max_cwt_variance_anal)
 		if plot_coi=="fill":
 			plt.fill_betweenx(np.log2(self.period_cwt),self.t[0],self.coi1,edgecolors=None,facecolor='black',alpha=0.5)
 			plt.fill_betweenx(np.log2(self.period_cwt),self.coi2,self.t[-1],edgecolors=None,facecolor='black',alpha=0.5)
@@ -3916,14 +3997,29 @@ class Wavepal:
 				plt.tick_params(axis='x', labelbottom='on', labeltop='off', labelsize=fontsize_ticks)
 			if reverse_yaxis is True:
 				plt.gca().invert_yaxis()
+		# Colorbar and its rescaling: min and max of the levels of color are defined over the non-shaded regions
 		cbar=plt.colorbar(mycontourf)
 		cbar.ax.set_ylabel("Variance"+self.varpow_label,fontsize=fontsize_axes)
 		cbar.ax.tick_params(labelsize=fontsize_ticks)
+		cbar.set_clim(minmin_cwt_variance_anal,maxmax_cwt_variance_anal)
+		my_color_ticks=np.linspace(minmin_cwt_variance_anal,maxmax_cwt_variance_anal,10)
+		cbar.set_ticks(my_color_ticks)
+		my_color_ticklabels=np.linspace(self.min_cwt_variance_anal,self.max_cwt_variance_anal,10)
+		my_power_color_ticklabels=float(10**(int(np.floor(np.log10(my_color_ticklabels[-1])))))
+		my_color_ticklabels=[el/my_power_color_ticklabels for el in my_color_ticklabels]
+		my_color_ticklabels=np.around(my_color_ticklabels,decimals=decimals)
+		mystring=' '.join(str(e) for e in my_color_ticklabels).split(' ')
+		if ('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0]):
+			mystring[0]="<="+mystring[0]
+		mystring[-1]=">="+mystring[-1]
+		cbar.set_ticklabels(mystring)
+		if int(np.log10(my_power_color_ticklabels))!=0:
+			cbar.ax.set_title('1e'+str(int(np.log10(my_power_color_ticklabels))),fontsize=fontsize_ticks)
 		return plt
 
 
 						 
-	def plot_cwtamplitude(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
+	def plot_cwtamplitude(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
 		
 		""" plot_cwtamplitude generates the figure of the amplitude scalogram. It also generates the figure of the global amplitude scalogram. Only available if computes_amplitude is True (see 'timefreq_analysis').
 			Optional Inputs:
@@ -3955,6 +4051,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -4109,6 +4206,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
 			return
+		try:
+			assert (type(decimals) is int) and decimals>=0
+		except AssertionError:
+			print "Error at input 'decimals': must be an integer >=0"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -4140,7 +4242,10 @@ class Wavepal:
 			gs1 = gridspec.GridSpec(1,5)
 			gs1.update(left=0.05+left_padding)
 			plt.subplot(gs1[0,:-1])
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_ampl),np.transpose(self.cwtamplitude),nlevels,vmin=self.minampl,vmax=self.maxampl)
+		minminampl=np.amin(np.amin(self.cwtamplitude))
+		maxmaxampl=np.amax(np.amax(self.cwtamplitude))
+		mynlevels=int(float(nlevels)/(self.maxampl-self.minampl)*(maxmaxampl-minminampl))
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_ampl),np.transpose(self.cwtamplitude),mynlevels,vmin=self.minampl,vmax=self.maxampl)
 		if (self.run_timefreq_ridges_filtering is True) and (plot_ridges is True):
 			nsk=len(self.skeleton)
 			for k in range(nsk):
@@ -4216,14 +4321,29 @@ class Wavepal:
 				plt.tick_params(axis='x', labelbottom='on', labeltop='off', labelsize=fontsize_ticks)
 			if reverse_yaxis is True:
 				plt.gca().invert_yaxis()
+		# Colorbar and its rescaling: min and max of the levels of color are defined over the non-shaded regions
 		cbar=plt.colorbar(mycontourf)
 		cbar.ax.set_ylabel("Amplitude"+self.mydata_label,fontsize=fontsize_axes)
 		cbar.ax.tick_params(labelsize=fontsize_ticks)
+		cbar.set_clim(minminampl,maxmaxampl)
+		my_color_ticks=np.linspace(minminampl,maxmaxampl,10)
+		cbar.set_ticks(my_color_ticks)
+		my_color_ticklabels=np.linspace(self.minampl,self.maxampl,10)
+		my_power_color_ticklabels=float(10**(int(np.floor(np.log10(my_color_ticklabels[-1])))))
+		my_color_ticklabels=[el/my_power_color_ticklabels for el in my_color_ticklabels]
+		my_color_ticklabels=np.around(my_color_ticklabels,decimals=decimals)
+		mystring=' '.join(str(e) for e in my_color_ticklabels).split(' ')
+		if ('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0]):
+			mystring[0]="<="+mystring[0]
+		mystring[-1]=">="+mystring[-1]
+		cbar.set_ticklabels(mystring)
+		if int(np.log10(my_power_color_ticklabels))!=0:
+			cbar.ax.set_title('1e'+str(int(np.log10(my_power_color_ticklabels))),fontsize=fontsize_ticks)
 		return plt
 						 
 						 
 						 
-	def plot_cwtamplitude_squared(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
+	def plot_cwtamplitude_squared(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
 		
 		""" plot_cwtamplitude_squared generates the figure of the squared amplitude scalogram. It also generates the figure of the global squared amplitude scalogram. Only available if computes_amplitude is True (see 'timefreq_analysis').
 			Optional Inputs:
@@ -4255,6 +4375,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -4409,6 +4530,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
 			return
+		try:
+			assert (type(decimals) is int) and decimals>=0
+		except AssertionError:
+			print "Error at input 'decimals': must be an integer >=0"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -4440,7 +4566,10 @@ class Wavepal:
 			gs1 = gridspec.GridSpec(1,5)
 			gs1.update(left=0.05+left_padding)
 			plt.subplot(gs1[0,:-1])
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_ampl),np.transpose(self.cwtamplitude**2),nlevels,vmin=self.minampl_sq,vmax=self.maxampl_sq)
+		minminampl_sq=np.amin(np.amin(self.cwtamplitude**2))
+		maxmaxampl_sq=np.amax(np.amax(self.cwtamplitude**2))
+		mynlevels=int(float(nlevels)/(self.maxampl_sq-self.minampl_sq)*(maxmaxampl_sq-minminampl_sq))
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_ampl),np.transpose(self.cwtamplitude**2),mynlevels,vmin=self.minampl_sq,vmax=self.maxampl_sq)
 		if (self.run_timefreq_ridges_filtering is True) and (plot_ridges is True):
 			nsk=len(self.skeleton)
 			for k in range(nsk):
@@ -4514,9 +4643,24 @@ class Wavepal:
 				plt.tick_params(axis='x', labelbottom='on', labeltop='off', labelsize=fontsize_ticks)
 			if reverse_yaxis is True:
 				plt.gca().invert_yaxis()
+		# Colorbar and its rescaling: min and max of the levels of color are defined over the non-shaded regions
 		cbar=plt.colorbar(mycontourf)
 		cbar.ax.set_ylabel("Power"+self.power_label,fontsize=fontsize_axes)
 		cbar.ax.tick_params(labelsize=fontsize_ticks)
+		cbar.set_clim(minminampl_sq,maxmaxampl_sq)
+		my_color_ticks=np.linspace(minminampl_sq,maxmaxampl_sq,10)
+		cbar.set_ticks(my_color_ticks)
+		my_color_ticklabels=np.linspace(self.minampl_sq,self.maxampl_sq,10)
+		my_power_color_ticklabels=float(10**(int(np.floor(np.log10(my_color_ticklabels[-1])))))
+		my_color_ticklabels=[el/my_power_color_ticklabels for el in my_color_ticklabels]
+		my_color_ticklabels=np.around(my_color_ticklabels,decimals=decimals)
+		mystring=' '.join(str(e) for e in my_color_ticklabels).split(' ')
+		if ('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0]):
+			mystring[0]="<="+mystring[0]
+		mystring[-1]=">="+mystring[-1]
+		cbar.set_ticklabels(mystring)
+		if int(np.log10(my_power_color_ticklabels))!=0:
+			cbar.ax.set_title('1e'+str(int(np.log10(my_power_color_ticklabels))),fontsize=fontsize_ticks)
 		return plt
 						 
 						 
