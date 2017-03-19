@@ -56,6 +56,14 @@ In the last part of the installation process, a test file is run to check that a
 ```
 Just before the test, the paths towards the built-in packages are showed, and python may choose to take old versions, that you had already installed. If you encounter troubles with some packages during the test, I recommend to delete old versions (whose path is given), and reinstall WAVEPAL.
 
+If you reinstall WAVEPAL from the same folder downloaded from github at the first installation, first delete the following files and folder:
+* build
+* dist
+* WAVEPAL.egg-info
+and rename: 
+* 'carmcmc_pack' to 'carmcmc'
+* 'wavepal_pack' to 'wavepal'
+
 ------------
 
 ## Examples
