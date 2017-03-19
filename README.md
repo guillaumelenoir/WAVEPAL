@@ -54,7 +54,7 @@ In the last part of the installation process, a test file is run to check that a
 * Test on data *
 ****************
 ```
-Just before the test, the paths towards the built-in packages are showed, and python may choose to take old versions, that you had already installed. If you encounter troubles with some pacakges during the test, I recommend to delete old versions (whose path is given), and reinstall WAVEPAL.
+Just before the test, the paths towards the built-in packages are showed, and python may choose to take old versions, that you had already installed. If you encounter troubles with some packages during the test, I recommend to delete old versions (whose path is given), and reinstall WAVEPAL.
 
 ------------
 
