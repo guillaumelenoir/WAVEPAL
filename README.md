@@ -60,6 +60,7 @@ If you reinstall WAVEPAL from the same folder downloaded from github at the firs
 * build
 * dist
 * WAVEPAL.egg-info
+
 and rename: 
 * 'carmcmc_pack' to 'carmcmc'
 * 'wavepal_pack' to 'wavepal'
