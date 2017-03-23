@@ -2589,10 +2589,7 @@ class Wavepal:
 			(C) 2016 G. Lenoir"""
 
 		import sys
-		from os import path
-		here = path.abspath(path.dirname(__file__))
-		sys.path.append(here+"/ridges")
-		from ridgewalk import ridgewalk
+		import ridges as ridges
 		import copy
 		
 		# check inputs
@@ -2634,7 +2631,7 @@ class Wavepal:
 			return
 
 		omega=2.*np.pi/self.period_ampl
-		IR,JR,XR,_=ridgewalk(self.cwtamplitude,omega,N,maxampl_point_coeff*self.maxampl,chaining_ridges_coeff)
+		IR,JR,XR,_=ridges.ridgewalk(self.cwtamplitude,omega,N,maxampl_point_coeff*self.maxampl,chaining_ridges_coeff)
 
 		if IR.size>0:
 			NR=0
@@ -2744,7 +2741,8 @@ class Wavepal:
 					if self.weight_cwt[m,k]>-1.:
 						count[m]+=1
 			count[count==0]=1
-			self.timefreq_band_filtered_signal[:,l]/=float(count)
+			for k in range(self.theta.size):
+				self.timefreq_band_filtered_signal[k,l]/=float(count[k])
 			self.timefreq_band_filtered_signal_bounds[l,0]=self.period_ampl[ind_low]
 			self.timefreq_band_filtered_signal_bounds[l,1]=self.period_ampl[ind_high]
 
