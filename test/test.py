@@ -39,4 +39,8 @@ fig = plt.gcf()
 fig.set_size_inches(52, 26)
 plot_scalogram.savefig(path_to_figure_folder+"scalogram_w0_5,5.pdf")
 plot_scalogram.close()
+x.carma_params(signif_level_type="")
+x.timefreq_analysis(w0=15.0,permin=10.,computes_amplitude=True,smoothing_coeff=0.)
+x.timefreq_ridges_filtering()
+x.timefreq_band_filtering([(37.,43.)])
 print "INSTALLATION COMPLETED SUCCESSFULLY"
