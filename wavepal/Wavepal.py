@@ -4017,7 +4017,7 @@ class Wavepal:
 
 
 						 
-	def plot_cwtamplitude(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
+	def plot_cwtamplitude(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3,linewidth_ridges=1.0):
 		
 		""" plot_cwtamplitude generates the figure of the amplitude scalogram. It also generates the figure of the global amplitude scalogram. Only available if computes_amplitude is True (see 'timefreq_analysis').
 			Optional Inputs:
@@ -4050,6 +4050,7 @@ class Wavepal:
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
 			- decimals=3: Numbers of decimals for the colorbar scale ticks.
+			- linewidth_ridges=1.0: Linewidth for the ridges
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -4247,12 +4248,12 @@ class Wavepal:
 		if (self.run_timefreq_ridges_filtering is True) and (plot_ridges is True):
 			nsk=len(self.skeleton)
 			for k in range(nsk):
-				plt.plot(self.skeleton[k][0],np.log2(self.skeleton[k][1]),'w')
+				plt.plot(self.skeleton[k][0],np.log2(self.skeleton[k][1]),'w',linewidth=linewidth_ridges)
 			for k in range(len(k_skeleton)):
 				if k>=nsk:
 					print "WARNING: Element "+str(k)+" of 'k_skeleton' is not a correct value"
 				else:
-					plt.plot(self.skeleton[k_skeleton[k]][0],np.log2(self.skeleton[k_skeleton[k]][1]),'k')
+					plt.plot(self.skeleton[k_skeleton[k]][0],np.log2(self.skeleton[k_skeleton[k]][1]),'k',linewidth=linewidth_ridges)
 		elif (self.run_timefreq_ridges_filtering is not True) and (plot_ridges is True):
 			print "WARNING: function 'timefreq_ridges_filtering' was not run => unable to draw the ridges"
 		if (self.run_timefreq_band_filtering is True) and (plot_band_filtering is True):
@@ -4341,7 +4342,7 @@ class Wavepal:
 						 
 						 
 						 
-	def plot_cwtamplitude_squared(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
+	def plot_cwtamplitude_squared(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3,linewidth_ridges=1.0):
 		
 		""" plot_cwtamplitude_squared generates the figure of the squared amplitude scalogram. It also generates the figure of the global squared amplitude scalogram. Only available if computes_amplitude is True (see 'timefreq_analysis').
 			Optional Inputs:
@@ -4374,6 +4375,7 @@ class Wavepal:
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
 			- decimals=3: Numbers of decimals for the colorbar scale ticks.
+			- linewidth_ridges=1.0: Linewidth for the ridges
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -4571,12 +4573,12 @@ class Wavepal:
 		if (self.run_timefreq_ridges_filtering is True) and (plot_ridges is True):
 			nsk=len(self.skeleton)
 			for k in range(nsk):
-				plt.plot(self.skeleton[k][0],np.log2(self.skeleton[k][1]),'w')
+				plt.plot(self.skeleton[k][0],np.log2(self.skeleton[k][1]),'w',linewidth=linewidth_ridges)
 			for k in range(len(kskel)):
 				if k>=nsk:
 					print "WARNING: Element "+str(k)+" of 'k_skeleton' is not a correct value"
 				else:
-					plt.plot(self.skeleton[k_skeleton[k]][0],np.log2(self.skeleton[k_skeleton[k]][1]),'k')
+					plt.plot(self.skeleton[k_skeleton[k]][0],np.log2(self.skeleton[k_skeleton[k]][1]),'k',linewidth=linewidth_ridges)
 		elif (self.run_timefreq_filtering is not True) and (plot_ridges is True):
 			print "WARNING: function 'timefreq_ridges_filtering' was not run => unable to draw the ridges"
 		if (self.run_timefreq_band_filtering is True) and (plot_band_filtering is True):
