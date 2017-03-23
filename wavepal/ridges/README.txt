@@ -1,4 +1,6 @@
-All the code in this folder is adapted from jlab (http://www.jmlilly.net/jmlsoft.html). jlab is available in matlab, and all the code relative to « ridgewalk.m » and its dependencies has been transformed to python2.X. 
+All the code of this package is adapted from jlab (http://www.jmlilly.net/jmlsoft.html). jlab is available in matlab, and all the code relative to « ridgewalk.m » and its dependencies has been transformed to python2.X. 
+
+N.B.: To call directly this package from python: import wavepal.ridges
 
 WARNING:
 ————————
