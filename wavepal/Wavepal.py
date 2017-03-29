@@ -1963,14 +1963,14 @@ class Wavepal:
 			N.B.: I wrote "approximately" because of the way the CWT is weighted. Concerning the provided values 'permin' and 'permax', a deviation up to 2% is possible.
 			- deltaj=0.05: parameter controlling the density of periods/scales. Scale vector is defined as scale_min*2.0**(float(j)*deltaj) for j=0, 1, 2, ... A smaller deltaj implies denser scales and a better precision. We have the following approximate relation between periods and scales: period=2*np.pi*scale.
 			- w0=5.5: the usual parameter for the Morlet wavelet controlling the time-frequency resolution. Minimal allowed value is w0=5.5. Increasing w0 offers a better scale/period resolution but a worse time resolution. There is always a trade-off due to the so-called 'Heisenberg uncertainty principle'.
-			- gauss_spread=3.0: parameter for the spread of gaussian. 2*gauss_spread*std (where std is the standard dev. of the gaussian) is the approximate SUPPORT (i.e. where the function is not zero) of a gaussian. Typical values are gauss_spread=3.0 (conservative choice) or sqrt(2.0) (value taken in Torrence and Compo, 1998, and some subsequent papers). This is used for the computation of the cone of influence and for the max. allowed scale (Gaussian in fct of time), and for the refining of the Shannon-Nyquist exclusion zone (Gaussian in fct of scale).
-			- eps=1.0e-06: parameter controlling the flexibility on the value of the border of the Shannon-Nyquist exclusion zone.
+			- gauss_spread=3.0: parameter for the spread of gaussian. 2*gauss_spread*std (where std is the standard dev. of the gaussian) is the approximate SUPPORT (i.e. where the function is not zero) of a gaussian. Typical values are gauss_spread=3.0 (conservative choice) or sqrt(2.0) (value taken in Torrence and Compo, 1998, and some subsequent papers). This is used for the computation of the cone of influence and for the max. allowed scale (Gaussian in fct of time), and for the refining of the SNEZ (Gaussian in fct of scale).
+			- eps=1.0e-06: parameter controlling the flexibility on the value of the border of the SNEZ.
 			- dt_GCD=None: the greatest common divisor of the time steps of the data time vector. Default value is the smallest time step (which is not exactly dt_GCD; it is an upper bound on the estimation of dt_GCD; but it is very simple to compute).
-			- shannonnyquistexclusionzone=False: activate (True) or not (False) the Shannon-Nyquist exclusion zone.
+			- shannonnyquistexclusionzone=False: activate (True) or not (False) the Shannon-Nyquist exclusion zone (SNEZ).
 			- weighted_CWT=False: True to get weighted scalogram, or False for the classical scalogram.
 			- smoothing_coeff=0.5: smoothing the CWT is performed this way: at a given (theta,scale), the CWT_smoothed is the average of the CWT along neighbouring values of theta (at the same scale). The interval of those neighbouring values of theta is delimited by: theta-smoothing_coeff*std and theta+smoothing_coeff*std, where std is the standard deviation of the gaussian. Note that:
 				-> the std depends on the scale.
-				-> Near the edges of the time series or close the the Shannon-Nyquist exclusion zone, the full interval over theta-smoothing_coeff*std to theta+smoothing_coeff*std cannot be considered. In such case, the CWT_smoothed at (theta,scale) is either ignored (if smoothing_type='fixed') or the interval around theta is shortened (if smoothing_type='variable').
+				-> Near the edges of the time series or close the the SNEZ, the full interval over theta-smoothing_coeff*std to theta+smoothing_coeff*std cannot be considered. In such case, the CWT_smoothed at (theta,scale) is either ignored (if smoothing_type='fixed') or the interval around theta is shortened (if smoothing_type='variable').
 			- smoothing_type='fixed': See above the explanations for 'smoothing_coeff'.
 			- percentile=None: The x^th percentiles for the confidence levels. Must be a 1-dim numpy array. Default is the 95^th percentile (i.e. the 95% confidence level):percentile=np.zeros(1); percentile[0]=95.0
 			- n_moments=2: number of conserved moments for the analytical confidence levels. Used if "a" is in signif_level_type (see function 'carma_params').
@@ -1978,7 +1978,7 @@ class Wavepal:
 			- algo_moments='gamma-polynomial': Choice for the algorithm for the computation of analytical confidence levels. Used if "a" is in signif_level_type (see function 'carma_params'). algo_moments='gamma-polynomial' or algo='generalized-gamma-polynomial'.
 			- computes_amplitude=False: computes the amplitude scalogram (if True) or not (if False).
 			- computes_global_scalogram=True: computes the global scalogram (if True) or not (if False). It also computes the global amplitude (if computes_amplitude=True) and the global values of other time-frequency variables.
-			- activate_perlim2=True: computes (and draws, for the functions making the figures) the refinement of the Shannon-Nyquist exclusion zone. True or False.
+			- activate_perlim2=True: computes (and draws, for the functions making the figures) the refinement of the SNEZ. True or False.
 			Outputs:
 			/
 			-----------------------------
@@ -2768,7 +2768,7 @@ class Wavepal:
 			N.B.: paddings are only active if with_global_scalogram is True.
 			WARNING with the paddings: If there is an overlap between figures, python can choose to not display one.
 			- color_cl_anal=None: colors for the analytical confidence levels/contours. Ex.: ['m','g','r'] will draw in magenta, green and red the 3 levels specified in 'percentile' input of function 'timefreq_analysis'. Default is a magenta contour for all the confidence levels.
-			- color_cl_mcmc=None: colors for the analytical confidence levels/contours. Ex.: ['m','g','r'] will draw in magenta, green and red the 3 levels specified in 'percentile' input of function 'timefreq_analysis'. Default is a green contour for all the confidence levels.
+			- color_cl_mcmc=None: colors for the mcmc confidence levels/contours. Ex.: ['m','g','r'] will draw in magenta, green and red the 3 levels specified in 'percentile' input of function 'timefreq_analysis'. Default is a green contour for all the confidence levels.
 			- linewidth_cl=2: linewidth of the confidence contours in the scalogram
 			- global_scal_xlabel="top": location of the xlabel for the global scalogram: "top" or "bottom".
 			- global_scal_xlabel_ticks="top": location of the ticks of the xlabel for the global scalogram: "top" or "bottom".
@@ -2778,12 +2778,11 @@ class Wavepal:
 			- nlevels=50: number of automatically-chosen color levels. 
 			- plot_coi="fill": plotting-type for the cone of influence: "fill" or "line".
 			- linewidth_coi=1.0: linewidth for the coi (if plot_coi="line").
-			- plot_perlim2="fill": plotting-type for the refinement of the Shannon-Nyquist refinement zone: "fill" or "line".
+			- plot_perlim2="fill": plotting-type for the refinement of the SNEZ: "fill" or "line".
 			- linewidth_perlim2=1.0: linewidth for perlim2 (if plot_perlim2="line").
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
-			- decimals=3: Numbers of decimals for the colorbar scale ticks.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3211,7 +3210,7 @@ class Wavepal:
 			- nlevels=50: number of automatically-chosen color levels. 
 			- plot_coi="fill": plotting-type for the cone of influence: "fill" or "line".
 			- linewidth_coi=1.0: linewidth for the coi (if plot_coi="line").
-			- plot_perlim2="fill": plotting-type for the refinement of the Shannon-Nyquist refinement zone: "fill" or "line".
+			- plot_perlim2="fill": plotting-type for the refinement of the SNEZ: "fill" or "line".
 			- linewidth_perlim2=1.0: linewidth for perlim2 (if plot_perlim2="line").
 			- linewidth_gspec=1.0: linewidth for the global analytical pseudo-cwtspectrum
 			- reverse_xaxis=False: Reverse the horizontal axis if True
@@ -3487,7 +3486,7 @@ class Wavepal:
 			- nlevels=50: number of automatically-chosen color levels. 
 			- plot_coi="fill": plotting-type for the cone of influence: "fill" or "line".
 			- linewidth_coi=1.0: linewidth for the coi (if plot_coi="line").
-			- plot_perlim2="fill": plotting-type for the refinement of the Shannon-Nyquist refinement zone: "fill" or "line".
+			- plot_perlim2="fill": plotting-type for the refinement of the SNEZ: "fill" or "line".
 			- linewidth_perlim2=1.0: linewidth for perlim2 (if plot_perlim2="line").
 			- linewidth_gspec=1.0: linewidth for the global MCMC pseudo-cwtspectrum.
 			- reverse_xaxis=False: Reverse the horizontal axis if True
@@ -3763,7 +3762,7 @@ class Wavepal:
 			- nlevels=50: number of automatically-chosen color levels. 
 			- plot_coi="fill": plotting-type for the cone of influence: "fill" or "line".
 			- linewidth_coi=1.0: linewidth for the coi (if plot_coi="line").
-			- plot_perlim2="fill": plotting-type for the refinement of the Shannon-Nyquist refinement zone: "fill" or "line".
+			- plot_perlim2="fill": plotting-type for the refinement of the SNEZ: "fill" or "line".
 			- linewidth_perlim2=1.0: linewidth for perlim2 (if plot_perlim2="line").
 			- linewidth_gscal=1.0: linewidth for the global scalogram.
 			- reverse_xaxis=False: Reverse the horizontal axis if True
@@ -4040,7 +4039,7 @@ class Wavepal:
 			- nlevels=50: number of automatically-chosen color levels. 
 			- plot_coi="fill": plotting-type for the cone of influence: "fill" or "line".
 			- linewidth_coi=1.0: linewidth for the coi (if plot_coi="line").
-			- plot_perlim2="fill": plotting-type for the refinement of the Shannon-Nyquist refinement zone: "fill" or "line".
+			- plot_perlim2="fill": plotting-type for the refinement of the SNEZ: "fill" or "line".
 			- linewidth_perlim2=1.0: linewidth for perlim2 (if plot_perlim2="line").
 			- plot_ridges=False: adds the ridges on the figure: True or False. There are drawn in white. Ridges are computed with function 'timefreq_ridges_filtering'.
 			- k_skeleton=[]: list of integers or empty list, containing the indices of the ridges to be drawn in black. The smallest index corresponds to the ridge starting at the bottom-left coner of the time-period panel. The highest index corresponds to the ridge starting at the top-right corner.
@@ -4365,7 +4364,7 @@ class Wavepal:
 			- nlevels=50: number of automatically-chosen color levels. 
 			- plot_coi="fill": plotting-type for the cone of influence: "fill" or "line".
 			- linewidth_coi=1.0: linewidth for the coi (if plot_coi="line").
-			- plot_perlim2="fill": plotting-type for the refinement of the Shannon-Nyquist refinement zone: "fill" or "line".
+			- plot_perlim2="fill": plotting-type for the refinement of the SNEZ: "fill" or "line".
 			- linewidth_perlim2=1.0: linewidth for perlim2 (if plot_perlim2="line").
 			- plot_ridges=False: adds the ridges on the figure: True or False. There are drawn in white. Ridges are computed with function 'timefreq_ridges_filtering'.
 			- k_skeleton=[]: list of integers or empty list, containing the indices of the ridges to be drawn in black. The smallest index corresponds to the ridge starting at the bottom-left coner of the time-period panel. The highest index corresponds to the ridge starting at the top-right corner.
