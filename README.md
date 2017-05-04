@@ -7,9 +7,9 @@ WAVEPAL is a package, written in python 2.X, that performs frequency and time-fr
 ## References
 
 The provisional reference for the package is
-> **G. Lenoir and M. Crucifix.** *Wavepal: A python software for wavelet analysis of irregularly sampled time series.* Poster presentation at the 1st CVAS workshop: What do we know about multicentennial, multimillenial variability?, Guesthouse of the University of Hamburg, November 2016.
+> **G. Lenoir and M. Crucifix.** *Wavepal: A python software for wavelet analysis of irregularly sampled time series.* Poster presentation at EGU General Assembly, Vienna, Austria, April 2017.
 
-and is available [here](http://www.elic.ucl.ac.be/users/lenoir/mywebsite/docs/poster_CVAS_2016.pdf). Two reference papers are currently under writing. 
+and is available [here](http://www.elic.ucl.ac.be/users/lenoir/mywebsite/docs/poster_EGU_2017.pdf). Two reference papers are currently under writing. 
 
 When `WAVEPAL` performs significance testing against a CARMA(p,q) background noise, it calls the python package [carma_pack](https://github.com/brandonckelly/carma_pack) (except when p=q=0: the case of a white noise background is entirely analysed within `WAVEPAL`), whose reference is
 > **B. C. Kelly, A. C. Becker, M. Sobolewska, A. Siemiginowska, and P. Uttley.** *Flexible and scalable methods for quantifying stochastic variability in the era of massive time-domain astronomical data sets.* The Astrophysical Journal, 788(1):33, 2014.
