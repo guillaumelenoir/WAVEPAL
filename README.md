@@ -14,7 +14,7 @@ and is available [here](http://www.elic.ucl.ac.be/users/lenoir/mywebsite/docs/po
 When `WAVEPAL` performs significance testing against a CARMA(p,q) background noise, it calls the python package [carma_pack](https://github.com/brandonckelly/carma_pack) (except when p=q=0: the case of a white noise background is entirely analysed within `WAVEPAL`), whose reference is
 > **B. C. Kelly, A. C. Becker, M. Sobolewska, A. Siemiginowska, and P. Uttley.** *Flexible and scalable methods for quantifying stochastic variability in the era of massive time-domain astronomical data sets.* The Astrophysical Journal, 788(1):33, 2014.
 
-Ridges filtering is based on functions that I have rewritten from the matlab package [jlab](http://www.jmlilly.net/jmlsoft.html). Main reference is
+Ridges filtering is based on functions that I have rewritten from the matlab package [jlab](https://github.com/jonathanlilly/jLab). Main reference is
 > **J. Lilly and S. Olhede.** *On the analytic wavelet transform.* IEEE Transactions on Information Theory, 56(8):4135–4156, aug. 2010.
 
 ---------------
