@@ -6,9 +6,10 @@ WAVEPAL is a package, written in python 2.X, that performs frequency and time-fr
 
 ## References
 
-The two reference are:
-> **G. Lenoir and M. Crucifix.** *A general theory on frequency and time–frequency analysis of irregularly sampled time series based on projection methods – part 1: Frequency analysis.* Nonlinear Processes in Geophysics, 25(1):145–173, 2018. [link](http://dx.doi.org/10.5194/npg-25-145-2018)
-> **G. Lenoir and M. Crucifix.** *A general theory on frequency and time–frequency analysis of irregularly sampled time series based on projection methods – part 2: Extension to time–frequency analysis.* Nonlinear Processes in Geophysics, 25(1):175–200, 2018. [link](http://dx.doi.org/10.5194/npg-25-175-2018)
+The two references are:
+> **G. Lenoir and M. Crucifix.** [*A general theory on frequency and time–frequency analysis of irregularly sampled time series based on projection methods – part 1: Frequency analysis.*](http://dx.doi.org/10.5194/npg-25-145-2018) Nonlinear Processes in Geophysics, 25(1):145–173, 2018.
+
+> **G. Lenoir and M. Crucifix.** [*A general theory on frequency and time–frequency analysis of irregularly sampled time series based on projection methods – part 2: Extension to time–frequency analysis.*](http://dx.doi.org/10.5194/npg-25-175-2018) Nonlinear Processes in Geophysics, 25(1):175–200, 2018.
 
 When `WAVEPAL` performs significance testing against a CARMA(p,q) background noise, it calls the python package [carma_pack](https://github.com/brandonckelly/carma_pack) (except when p=q=0: the case of a white noise background is entirely analysed within `WAVEPAL`), whose reference is
 > **B. C. Kelly, A. C. Becker, M. Sobolewska, A. Siemiginowska, and P. Uttley.** *Flexible and scalable methods for quantifying stochastic variability in the era of massive time-domain astronomical data sets.* The Astrophysical Journal, 788(1):33, 2014.
