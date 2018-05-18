@@ -131,6 +131,7 @@ class Wavepal:
 		self.freq_filtered_signal_bounds=None
 		self.run_freq_filtering=False
 		# Defined in function 'timefreq_analysis'
+		self.w0=None
 		self.theta=None
 		self.period_cwt=None
 		self.period_ampl=None
@@ -181,6 +182,7 @@ class Wavepal:
 		self.max_cwt_variance_anal=None
 		self.n_outside_scalelim1=None
 		self.weight_cwt=None
+		self.r=None
 		self.run_timefreq_analysis=False
 		# Defined in function 'timefreq_ridges_filtering'
 		self.skeleton=None
@@ -1450,9 +1452,9 @@ class Wavepal:
 		for k in range(self.percentile.size):
 			if 'n' in self.signif_level_type:
 				if loglog is False:
-					plt.plot(self.freq**mypow,self.periodogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile[k])+"%"+" (from distr. param.)",linewidth=linewidth_cl)
+					plt.plot(self.freq**mypow,self.periodogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile[k])+"%"+" (from stoch. param.)",linewidth=linewidth_cl)
 				elif loglog is True:
-					plt.loglog(self.freq**mypow,self.periodogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile[k])+"%"+" (from distr. param.)",linewidth=linewidth_cl)
+					plt.loglog(self.freq**mypow,self.periodogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile[k])+"%"+" (from stoch. param.)",linewidth=linewidth_cl)
 			if 'a' in self.signif_level_type:
 				if self.p==0:
 					if loglog is False:
@@ -1960,7 +1962,6 @@ class Wavepal:
 			- theta=None: the times at which the CWT is computed. Default is theta=np.linspace(t[0],t[-1],t.size), where t is the time vector of the data. N.B.: theta may be irregularly sampled, although we recommend a regular grid.
 			- permin=None: minimal period. Default value is approximately permin=2.*dt_GCD (see below for the definition of dt_GCD).
 			- permax=None: maximal period. Default value is approximately permax=np.pi*(t[-1]-t[0])/w0/gauss_spread, where t is the time vector of the data. w0 and gauss_spread are defined below.
-			N.B.: I wrote "approximately" because of the way the CWT is weighted. Concerning the provided values 'permin' and 'permax', a deviation up to 2% is possible.
 			- deltaj=0.05: parameter controlling the density of periods/scales. Scale vector is defined as scale_min*2.0**(float(j)*deltaj) for j=0, 1, 2, ... A smaller deltaj implies denser scales and a better precision. We have the following approximate relation between periods and scales: period=2*np.pi*scale.
 			- w0=5.5: the usual parameter for the Morlet wavelet controlling the time-frequency resolution. Minimal allowed value is w0=5.5. Increasing w0 offers a better scale/period resolution but a worse time resolution. There is always a trade-off due to the so-called 'Heisenberg uncertainty principle'.
 			- gauss_spread=3.0: parameter for the spread of gaussian. 2*gauss_spread*std (where std is the standard dev. of the gaussian) is the approximate SUPPORT (i.e. where the function is not zero) of a gaussian. Typical values are gauss_spread=3.0 (conservative choice) or sqrt(2.0) (value taken in Torrence and Compo, 1998, and some subsequent papers). This is used for the computation of the cone of influence and for the max. allowed scale (Gaussian in fct of time), and for the refining of the SNEZ (Gaussian in fct of scale).
@@ -2154,6 +2155,8 @@ class Wavepal:
 			percentile[0]=95.0
 		self.percentile_cwt=percentile
 		self.smoothing_coeff=smoothing_coeff
+		self.n_moments_cwt=n_moments
+		self.w0=w0
 		# theta is put in ascending order and check whether theta range is included in self.t range
 		theta_ind_sort=np.argsort(self.theta)
 		self.theta=self.theta[theta_ind_sort]
@@ -2230,6 +2233,7 @@ class Wavepal:
 			if computes_amplitude is True:
 				self.global_amplitude=np.zeros(J)
 		mydata_transp=np.transpose(self.mydata)
+		self.r=np.zeros((Q,J),dtype=int)
 		print "Main loop, over the time-frequency plane:"
 		for l in trange(J):
 			scale_l=scale[l]
@@ -2266,6 +2270,8 @@ class Wavepal:
 						ind_right=np.argmin(np.absolute(mytheta-(mytheta_k+smoothing_coeff*w0*scale_l)))
 						mylength=ind_right+1-ind_left
 						weight_gs[ind_left:(ind_right+1)]+=1./float(mylength)
+						# Smoothing factor
+						self.r[mytheta_ind[k],l]=mylength
 						# Data scalogram
 						self.scalogram[mytheta_ind[k],l]=la.norm(scalogram_int[2*ind_left:2*(ind_right+1)])**2/float(mylength)
 						# Data Amplitude
@@ -2341,7 +2347,7 @@ class Wavepal:
 									tr_unique_gs[l,o]=np.sum(eig_unique**(o+1))
 								self.pseudo_global_spectrum_anal[l]=tr_unique_gs[l,0]
 								if weighted_CWT is False:
-									self.global_scalogram_variance_anal[l]=2.*tr_unique[l,1]
+									self.global_scalogram_variance_anal[l]=2.*tr_unique_gs[l,1]
 						else:
 							if 'n' in self.signif_level_type:
 								for m in range(n_outside_scalelim1[l]):
@@ -2371,6 +2377,7 @@ class Wavepal:
 								if weighted_CWT is False:
 									self.global_scalogram_variance_anal[l]=2.*tr_unique_gs[l,1]
 			else:
+				mymat_full=np.dot(np.transpose(M2),np.dot(self.ARMA_mat_unique,M2))
 				for k in range(n_outside_scalelim1[l]):
 					if (smoothing_type=="fixed" and (l<scalelim1_ind_smooth[mytheta_ind[k]] or l>coi_smooth_ind[mytheta_ind[k]])):
 						continue
@@ -2380,6 +2387,8 @@ class Wavepal:
 						ind_left=np.argmin(np.absolute(mytheta-(mytheta_k-smoothing_coeff*w0*scale_l)))
 						ind_right=np.argmin(np.absolute(mytheta-(mytheta_k+smoothing_coeff*w0*scale_l)))
 						mylength=ind_right+1-ind_left
+						# Smoothing factor
+						self.r[mytheta_ind[k],l]=mylength
 						# Data scalogram
 						self.scalogram[mytheta_ind[k],l]=la.norm(scalogram_int[2*ind_left:2*(ind_right+1)])**2/float(mylength)
 						# Data Amplitude
@@ -2421,17 +2430,20 @@ class Wavepal:
 									for m in range(npercentile):
 										self.scalogram_cl_mcmc[mytheta_ind[k],l,m]=sorted_scal[int(mylevel[m])]
 								if 'a' in self.signif_level_type:
-									if count==1:
-										mymat=np.dot(np.transpose(M2[:,2*ind_left:2*(ind_right+1)]),np.dot(self.ARMA_mat_unique,M2[:,2*ind_left:2*(ind_right+1)]))
-									else:
-										mymat=np.delete(mymat,tuple(range(2*(ind_left-ind_left_old))),0)
-										mymat=np.delete(mymat,tuple(range(2*(ind_left-ind_left_old))),1)
-										mymat_sup=np.dot(np.transpose(M2[:,2*ind_left:2*(ind_right+1)]),np.dot(self.ARMA_mat_unique,M2[:,2*(ind_right_old+1):2*(ind_right+1)]))
-										if mymat.size==0:
-											mymat=mymat_sup
-										else:
-											mymat=np.append(mymat,np.transpose(mymat_sup[:2*(ind_right_old-ind_left+1),:]),0)
-											mymat=np.append(mymat,mymat_sup,1)
+									#if count==1:
+									#	mymat=np.dot(np.transpose(M2[:,2*ind_left:2*(ind_right+1)]),np.dot(self.ARMA_mat_unique,M2[:,2*ind_left:2*(ind_right+1)]))
+									#else:
+									#	mymat=np.delete(mymat,tuple(range(2*(ind_left-ind_left_old))),0)
+									#	mymat=np.delete(mymat,tuple(range(2*(ind_left-ind_left_old))),1)
+									#	mymat_sup=np.dot(np.transpose(M2[:,2*ind_left:2*(ind_right+1)]),np.dot(self.ARMA_mat_unique,M2[:,2*(ind_right_old+1):2*(ind_right+1)]))
+									#	if mymat.size==0:
+									#		mymat=mymat_sup
+									#	else:
+									#		mymat=np.append(mymat,np.transpose(mymat_sup[:2*(ind_right_old-ind_left+1),:]),0)
+									#		mymat=np.append(mymat,mymat_sup,1)
+									mymat=mymat_full[2*ind_left:2*(ind_right+1),2*ind_left:2*(ind_right+1)]
+									mymat+=np.transpose(mymat)
+									mymat/=2.
 									if n_moments==2:
 										# quicker if NOT computing the eigenvalues, when n_moments=2
 										tr_unique[k,0]=np.trace(mymat/float(mylength))
@@ -2472,7 +2484,6 @@ class Wavepal:
 				myind_scale_full[5]=J-1
 			self.global_scalogram_cl_anal, check_percentile=percentile_n_moments(tr_unique_gs,percentile/100.0,myind_scale_full,algo_moments,MaxFunEvals)
 			self.global_scalogram_cl_anal_check_convergence=[self.period_cwt[myind_scale_full],check_percentile]
-			self.n_moments_cwt=n_moments
 		# Impose value -1 instead of zero for significance levels, in case of zeros (just to not divide by zero, but those points are in the exclusion zone anyway)
 		if 'a' in self.signif_level_type:
 			self.scalogram_cl_anal[self.scalogram_cl_anal==0.]=-1.
@@ -2750,7 +2761,7 @@ class Wavepal:
 
 
 
-	def plot_scalogram(self,with_global_scalogram=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,color_cl_anal=None,color_cl_mcmc=None,linewidth_cl=2,global_scal_xlabel="top",global_scal_xlabel_ticks="top",linewidth_gscal=1.0,linewidth_gcl=1.0,cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
+	def plot_scalogram(self,with_global_scalogram=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,color_cl_anal=None,color_cl_mcmc=None,linewidth_cl=2,global_scal_xlabel="top",global_scal_xlabel_ticks="top",linewidth_gscal=1.0,linewidth_gcl=1.0,cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3,minscal=None,maxscal=None,permin_ext=None):
 		
 		""" plot_scalogram generates the figure of the scalogram and its confidence levels. It also generates the figure of the global scalogram and its confidence levels.
 			Optional Inputs:
@@ -2783,6 +2794,10 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks under the scientific notation (e.g. 1.567e-10).
+			- minscal=None: Fix the lower bound of the color scale. Default (None) takes the min value of the scalogram over the non-shaded area.
+			- maxscal=None: Fix the higher bound of the color scale. Default (None) takes the max value of the scalogram over the non-shaded area.
+			- permin_ext=None: If a float value is given, the SNEZ is broaden towards this given period. Available only if shannonnyquistexclusionzone=True in the method 'timefreq_analysis'.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -2794,6 +2809,7 @@ class Wavepal:
 	
 		import matplotlib.pyplot as plt
 		import matplotlib.gridspec as gridspec
+		from copy import copy
 		
 		# check inputs
 		try:
@@ -2953,6 +2969,21 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'decimals': must be an integer >=0"
 			return
+		try:
+			assert (minscal is None) or (type(minscal) is float and minscal>=0.)
+		except AssertionError:
+			print "Error at input 'minscal': must be a float >=0"
+			return
+		try:
+			assert (maxscal is None) or (type(maxscal) is float and maxscal>=0.)
+		except AssertionError:
+			print "Error at input 'maxscal': must be a float, >=0, and >= 'minscal'"
+			return
+		try:
+			assert (permin_ext is None) or (type(permin_ext) is float and permin_ext>=0.)
+		except AssertionError:
+			print "Error at input 'permin_ext': must be a float >=0"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -2966,8 +2997,14 @@ class Wavepal:
 				print "Error: Global scalogram was not computed"
 				print "=> drawing the figure without the global scalogram"
 				with_global_scalogram=False
+		if (self.shannonnyquistexclusionzone is False) and (permin_ext is not None):
+			print "parameter 'permin_ext' changed to 'None', since 'shannonnyquistexclusionzone' is 'False'"
+			permin_ext=None
 		if period_string is None:
-			myperiod=np.ceil(np.log2(self.period_cwt[0]))
+			if (permin_ext is not None) and (permin_ext<self.period_cwt[0]):
+				myperiod=np.ceil(np.log2(permin_ext))
+			else:
+				myperiod=np.ceil(np.log2(self.period_cwt[0]))
 			myperiod=2.**myperiod
 			period_string=[myperiod]
 			while True:
@@ -2975,6 +3012,15 @@ class Wavepal:
 				if myperiod>self.period_cwt[-1]:
 					break
 				period_string.append(myperiod)
+		if minscal is None:
+			minscal=self.minscal
+		if maxscal is None:
+			maxscal=self.maxscal
+		try:
+			assert maxscal>=minscal
+		except AssertionError:
+			print "Error: variable 'maxscal' must be greater than or equal to 'minscal'"
+			return
 		if with_global_scalogram is True:
 			gs1 = gridspec.GridSpec(1,5)
 			gs1.update(left=0.05+left_padding)
@@ -2985,8 +3031,18 @@ class Wavepal:
 			color_cl_mcmc=['g']*self.percentile_cwt.size
 		minminscal=np.amin(np.amin(self.scalogram))
 		maxmaxscal=np.amax(np.amax(self.scalogram))
-		mynlevels=int(float(nlevels)/(self.maxscal-self.minscal)*(maxmaxscal-minminscal))
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.scalogram),mynlevels,vmin=self.minscal,vmax=self.maxscal,cmap=cmap)
+		myscal=copy(self.scalogram)
+		if maxscal<maxmaxscal:
+			myscal[myscal>maxscal]=maxscal
+			myvmax=maxscal
+		else:
+			myvmax=maxscal
+		if minscal>minminscal:
+			myscal[myscal<minscal]=minscal
+			myvmin=minscal
+		else:
+			myvmin=minscal
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(myscal),nlevels,vmin=myvmin,vmax=myvmax,cmap=cmap)
 		for k in range(self.percentile_cwt.size):
 			if 'a' in self.signif_level_type:
 				cv_anal=self.scalogram/self.scalogram_cl_anal[:,:,k]
@@ -3003,7 +3059,10 @@ class Wavepal:
 		plt.fill_betweenx(np.log2(self.period_cwt),self.theta[0],self.coi1_smooth,edgecolors=None,facecolor='black')
 		plt.fill_betweenx(np.log2(self.period_cwt),self.coi2_smooth,self.theta[-1],edgecolors=None,facecolor='black')
 		if self.shannonnyquistexclusionzone is True:
-			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black')
+			if (permin_ext is not None) and (permin_ext<self.period_cwt[0]):
+				plt.fill_between(self.theta,np.log2(permin_ext)*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black')
+			else:
+				plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black')
 			if plot_perlim2=="fill":
 				plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim2_smooth_scal),edgecolors=None,facecolor='black',alpha=0.5)
 			elif plot_perlim2=="line":
@@ -3037,7 +3096,10 @@ class Wavepal:
 		plt.xticks(fontsize=fontsize_ticks)
 		plt.yticks(np.log2(period_string), period_string, fontsize=fontsize_ticks)
 		plt.xlim([self.theta[0], self.theta[-1]])
-		plt.ylim([np.log2(self.period_cwt[0]), np.log2(self.period_cwt[-1])])
+		if (permin_ext is not None) and (permin_ext<self.period_cwt[0]):
+			plt.ylim([np.log2(permin_ext), np.log2(self.period_cwt[-1])])
+		else:
+			plt.ylim([np.log2(self.period_cwt[0]), np.log2(self.period_cwt[-1])])
 		plt.suptitle(mytitle, fontsize=fontsize_title)
 		if reverse_xaxis is True:
 			plt.gca().invert_xaxis()
@@ -3064,7 +3126,10 @@ class Wavepal:
 				for k in range(len(dashed_periods)):
 					plt.plot(myrange,np.log2(dashed_periods[k])*np.ones(len(myrange)),'k--')
 			plt.yticks(np.log2(period_string),[])
-			plt.ylim([np.log2(self.period_cwt[0]), np.log2(self.period_cwt[-1])])
+			if (permin_ext is not None) and (permin_ext<self.period_cwt[0]):
+				plt.ylim([np.log2(permin_ext), np.log2(self.period_cwt[-1])])
+			else:
+				plt.ylim([np.log2(self.period_cwt[0]), np.log2(self.period_cwt[-1])])
 			plt.xlim([glob_scal_min, glob_scal_max])
 			plt.xlabel("Power"+self.power_label,fontsize=fontsize_axes)
 			ax=plt.gca()
@@ -3081,17 +3146,17 @@ class Wavepal:
 		cbar=plt.colorbar(mycontourf)
 		cbar.ax.set_ylabel("Power"+self.power_label,fontsize=fontsize_axes)
 		cbar.ax.tick_params(labelsize=fontsize_ticks)
-		cbar.set_clim(minminscal,maxmaxscal)
-		my_color_ticks=np.linspace(minminscal,maxmaxscal,10)
+		my_color_ticks=np.linspace(max(minscal,minminscal),min(maxscal,maxmaxscal),10)
 		cbar.set_ticks(my_color_ticks)
-		my_color_ticklabels=np.linspace(self.minscal,self.maxscal,10)
+		my_color_ticklabels=copy(my_color_ticks)
 		my_power_color_ticklabels=float(10**(int(np.floor(np.log10(my_color_ticklabels[-1])))))
 		my_color_ticklabels=[el/my_power_color_ticklabels for el in my_color_ticklabels]
 		my_color_ticklabels=np.around(my_color_ticklabels,decimals=decimals)
 		mystring=' '.join(str(e) for e in my_color_ticklabels).split(' ')
-		if ('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0]):
+		if minscal>minminscal and (('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0])):
 			mystring[0]="<="+mystring[0]
-		mystring[-1]=">="+mystring[-1]
+		if maxscal<maxmaxscal:
+			mystring[-1]=">="+mystring[-1]
 		cbar.set_ticklabels(mystring)
 		if int(np.log10(my_power_color_ticklabels))!=0:
 			cbar.ax.set_title('1e'+str(int(np.log10(my_power_color_ticklabels))),fontsize=fontsize_ticks)
@@ -3185,7 +3250,152 @@ class Wavepal:
 				aa.set_ylabel("Power"+self.power_label,fontsize=fontsize_axes)
 			aa.tick_params(labelsize=fontsize_ticks)
 		return plt
-						 
+	
+	
+	
+	def plot_smoothing_factor(self,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,cmap="jet",reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5):
+		
+		""" plot_smoothing_factor draws the half dimension of matrix M2 in the time-frequency plane. This gives the number of points over which smoothing is performed. No smoothing results in a value of 1 everywhere.
+			Optional Inputs:
+			- time_string=None: list of floats containing the location of the ticks for the time axis.
+			- period_string=None: list of floats containing the location of the ticks for the period axis.
+			- power_string=None: list of floats containing the location of the ticks for the power axis of the global scalogram.
+			- dashed_periods=None: list of floats containing the periods for which a dashed line is drawn.
+			- fontsize_title=14: fontsize for the figure title.
+			- fontsize_axes=12: fontsize for the figure axes.
+			- fontsize_ticks=12: fontsize for the figure ticks.
+			- cmap="jet": colormap for the scalogram. Other choices on http://matplotlib.org/users/colormaps.html
+			- reverse_xaxis=False: Reverse the horizontal axis if True
+			- reverse_yaxis=False: Reverse the vertical axis if True
+			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
+			Outputs:
+			- plt: matplotlib.pyplot object that gives the user an access to the figure.
+			-> plt.show(): to draw the figure
+			-> plt.savefig(figname.pdf): to save a figure
+			etc. See matplotlib documentation.
+			-----------------------------
+			This is part of WAVEPAL
+			(C) 2017 G. Lenoir"""
+		
+		import matplotlib.pyplot as plt
+		from copy import copy
+		
+		# check inputs
+		try:
+			assert (time_string is None) or (type(time_string) is list)
+		except AssertionError:
+			print "Error at input 'time_string': must be None or of type 'list'"
+			return
+		if type(time_string) is list:
+			for k in range(len(time_string)):
+				try:
+					assert type(time_string[k]) is float
+				except AssertionError:
+					print "Error at input 'time_string': must be a list containing floats"
+					return
+		try:
+			assert (period_string is None) or (type(period_string) is list)
+		except AssertionError:
+			print "Error at input 'period_string': must be None or of type 'list'"
+			return
+		if type(period_string) is list:
+			for k in range(len(period_string)):
+				try:
+					assert type(period_string[k]) is float
+				except AssertionError:
+					print "Error at input 'period_string': must be a list containing floats"
+					return
+		try:
+			assert (power_string is None) or (type(power_string) is list)
+		except AssertionError:
+			print "Error at input 'power_string': must be None or of type 'list'"
+			return
+		if type(power_string) is list:
+			for k in range(len(power_string)):
+				try:
+					assert type(power_string[k]) is float
+				except AssertionError:
+					print "Error at input 'power_string': must be a list containing floats"
+					return
+		try:
+			assert (dashed_periods is None) or (type(dashed_periods) is list)
+		except AssertionError:
+			print "Error at input 'dashed_periods': must be None or of type 'list'"
+			return
+		if type(dashed_periods) is list:
+			for k in range(len(dashed_periods)):
+				try:
+					assert type(dashed_periods[k]) is float
+				except AssertionError:
+					print "Error at input 'dashed_periods': must be a list containing floats"
+					return
+		try:
+			assert type(cmap) is str
+		except AssertionError:
+			print "Error at input 'cmap': must be of type 'str'"
+			return
+		try:
+			assert type(reverse_xaxis) is bool
+		except AssertionError:
+			print "Error at input 'reverse_xaxis': must be True or False"
+			return
+		try:
+			assert type(reverse_yaxis) is bool
+		except AssertionError:
+			print "Error at input 'reverse_yaxis': must be True or False"
+			return
+		try:
+			assert ((type(alpha_SNEZ) is float) or (type(alpha_SNEZ) is int)) and (alpha_SNEZ>=0 and alpha_SNEZ<=1)
+		except AssertionError:
+			print "Error at input 'alpha_SNEZ': must of type float or int and must take a value in [0,1]"
+			return
+		# check that some functions were previously run
+		try:
+			assert self.run_timefreq_analysis is True
+		except AssertionError:
+			print "Error: Must have run function 'timefreq_analysis'"
+			return
+		if period_string is None:
+			myperiod=np.ceil(np.log2(self.period_cwt[0]))
+			myperiod=2.**myperiod
+			period_string=[myperiod]
+			while True:
+				myperiod*=2.
+				if myperiod>self.period_cwt[-1]:
+					break
+				period_string.append(myperiod)
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.r),levels=range(self.r.max()+1),cmap=cmap)
+		plt.fill_betweenx(np.log2(self.period_cwt),self.theta[0],self.coi1_smooth,edgecolors=None,facecolor='black')
+		plt.fill_betweenx(np.log2(self.period_cwt),self.coi2_smooth,self.theta[-1],edgecolors=None,facecolor='black')
+		if self.shannonnyquistexclusionzone is True:
+			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black')
+		elif self.shannonnyquistexclusionzone is False:
+			plt.fill_between(self.theta,np.log2(self.period_cwt[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_cwt),edgecolors=None,facecolor='black',alpha=alpha_SNEZ)
+		ax = plt.gca()
+		ax.tick_params(length=5, width=1, color='w')
+		if dashed_periods is not None:
+			for k in range(len(dashed_periods)):
+				plt.plot(self.theta,np.log2(dashed_periods[k])*np.ones(self.theta.size),'w--')
+		plt.xlabel(self.t_axis_label+self.t_label,fontsize=fontsize_axes)
+		plt.ylabel("Period"+self.t_label,fontsize=fontsize_axes)
+		mytitle="Smoothing Factor"
+		if time_string is not None:
+			plt.xticks(time_string, time_string)
+		plt.xticks(fontsize=fontsize_ticks)
+		plt.yticks(np.log2(period_string), period_string, fontsize=fontsize_ticks)
+		plt.xlim([self.theta[0], self.theta[-1]])
+		plt.ylim([np.log2(self.period_cwt[0]), np.log2(self.period_cwt[-1])])
+		plt.suptitle(mytitle, fontsize=fontsize_title)
+		if reverse_xaxis is True:
+			plt.gca().invert_xaxis()
+		if reverse_yaxis is True:
+			plt.gca().invert_yaxis()
+		# Colorbar and its rescaling: min and max of the levels of color are defined over the non-shaded regions
+		cbar=plt.colorbar(mycontourf)
+		cbar.ax.set_ylabel("Smoothing Factor",fontsize=fontsize_axes)
+		cbar.ax.tick_params(labelsize=fontsize_ticks)
+		return plt
+	
 						 
 
 	def plot_pseudo_cwtspectrum_anal(self,with_pseudo_global_spectrum_anal=True,time_string=None,period_string=None,power_string=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,pseudo_global_spectrum_anal_xlabel="top",pseudo_global_spectrum_anal_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,linewidth_gspec=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3):
@@ -3216,7 +3426,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
-			- decimals=3: Numbers of decimals for the colorbar scale ticks.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks under the scientific notation (e.g. 1.567e-10).
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3389,7 +3599,7 @@ class Wavepal:
 		minmin_pseudo_cwtspectrum_anal=np.amin(np.amin(self.pseudo_cwtspectrum_anal))
 		maxmax_pseudo_cwtspectrum_anal=np.amax(np.amax(self.pseudo_cwtspectrum_anal))
 		mynlevels=int(float(nlevels)/(self.max_pseudo_cwtspectrum_anal-self.min_pseudo_cwtspectrum_anal)*(maxmax_pseudo_cwtspectrum_anal-minmin_pseudo_cwtspectrum_anal))
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.pseudo_cwtspectrum_anal),mynlevels,vmin=self.min_pseudo_cwtspectrum_anal,vmax=self.max_pseudo_cwtspectrum_anal)
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.pseudo_cwtspectrum_anal),mynlevels,vmin=self.min_pseudo_cwtspectrum_anal,vmax=self.max_pseudo_cwtspectrum_anal,cmap=cmap)
 		if plot_coi=="fill":
 			plt.fill_betweenx(np.log2(self.period_cwt),self.t[0],self.coi1,edgecolors=None,facecolor='black',alpha=0.5)
 			plt.fill_betweenx(np.log2(self.period_cwt),self.coi2,self.t[-1],edgecolors=None,facecolor='black',alpha=0.5)
@@ -3492,7 +3702,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
-			- - decimals=3: Numbers of decimals for the colorbar scale ticks.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks under the scientific notation (e.g. 1.567e-10).
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3665,7 +3875,7 @@ class Wavepal:
 		minmin_pseudo_cwtspectrum_mcmc=np.amin(np.amin(self.pseudo_cwtspectrum_mcmc))
 		maxmax_pseudo_cwtspectrum_mcmc=np.amax(np.amax(self.pseudo_cwtspectrum_mcmc))
 		mynlevels=int(float(nlevels)/(self.max_pseudo_cwtspectrum_mcmc-self.min_pseudo_cwtspectrum_mcmc)*(maxmax_pseudo_cwtspectrum_mcmc-minmin_pseudo_cwtspectrum_mcmc))
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.pseudo_cwtspectrum_mcmc),mynlevels,vmin=self.min_pseudo_cwtspectrum_mcmc,vmax=self.max_pseudo_cwtspectrum_mcmc)
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.pseudo_cwtspectrum_mcmc),mynlevels,vmin=self.min_pseudo_cwtspectrum_mcmc,vmax=self.max_pseudo_cwtspectrum_mcmc,cmap=cmap)
 		if plot_coi=="fill":
 			plt.fill_betweenx(np.log2(self.period_cwt),self.t[0],self.coi1,edgecolors=None,facecolor='black',alpha=0.5)
 			plt.fill_betweenx(np.log2(self.period_cwt),self.coi2,self.t[-1],edgecolors=None,facecolor='black',alpha=0.5)
@@ -3768,7 +3978,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
-			- decimals=3: Numbers of decimals for the colorbar scale ticks.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks under the scientific notation (e.g. 1.567e-10).
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -3941,7 +4151,7 @@ class Wavepal:
 		minmin_cwt_variance_anal=np.amin(np.amin(self.cwt_variance_anal))
 		maxmax_cwt_variance_anal=np.amax(np.amax(self.cwt_variance_anal))
 		mynlevels=int(float(nlevels)/(self.max_cwt_variance_anal-self.min_cwt_variance_anal)*(maxmax_cwt_variance_anal-minmin_cwt_variance_anal))
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.cwt_variance_anal),mynlevels,vmin=self.min_cwt_variance_anal,vmax=self.max_cwt_variance_anal)
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_cwt),np.transpose(self.cwt_variance_anal),mynlevels,vmin=self.min_cwt_variance_anal,vmax=self.max_cwt_variance_anal,cmap=cmap)
 		if plot_coi=="fill":
 			plt.fill_betweenx(np.log2(self.period_cwt),self.t[0],self.coi1,edgecolors=None,facecolor='black',alpha=0.5)
 			plt.fill_betweenx(np.log2(self.period_cwt),self.coi2,self.t[-1],edgecolors=None,facecolor='black',alpha=0.5)
@@ -4048,7 +4258,7 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
-			- decimals=3: Numbers of decimals for the colorbar scale ticks.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks under the scientific notation (e.g. 1.567e-10).
 			- linewidth_ridges=1.0: Linewidth for the ridges
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
@@ -4209,6 +4419,11 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'decimals': must be an integer >=0"
 			return
+		try:
+			assert (type(linewidth_ridges) is int) or (type(linewidth_ridges) is float)
+		except AssertionError:
+			print "Error at input 'linewidth_ridges': must be an integer or float"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -4243,7 +4458,7 @@ class Wavepal:
 		minminampl=np.amin(np.amin(self.cwtamplitude))
 		maxmaxampl=np.amax(np.amax(self.cwtamplitude))
 		mynlevels=int(float(nlevels)/(self.maxampl-self.minampl)*(maxmaxampl-minminampl))
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_ampl),np.transpose(self.cwtamplitude),mynlevels,vmin=self.minampl,vmax=self.maxampl)
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_ampl),np.transpose(self.cwtamplitude),mynlevels,vmin=self.minampl,vmax=self.maxampl,cmap=cmap)
 		if (self.run_timefreq_ridges_filtering is True) and (plot_ridges is True):
 			nsk=len(self.skeleton)
 			for k in range(nsk):
@@ -4341,7 +4556,7 @@ class Wavepal:
 						 
 						 
 						 
-	def plot_cwtamplitude_squared(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3,linewidth_ridges=1.0):
+	def plot_cwtamplitude_squared(self,with_global_amplitude=True,time_string=None,period_string=None,power_string=None,dashed_periods=None,fontsize_title=14,fontsize_axes=12,fontsize_ticks=12,left_padding=0.,right_padding=0.,middle_padding=0.,global_amplitude_xlabel="top",global_amplitude_xlabel_ticks="top",cmap="jet",nlevels=50,plot_coi="fill",linewidth_coi=1.0,plot_perlim2="fill",linewidth_perlim2=1.0,plot_ridges=False,k_skeleton=[],plot_band_filtering=False,linewidth_gampl=1.0,reverse_xaxis=False,reverse_yaxis=False,alpha_SNEZ=0.5,decimals=3,linewidth_ridges=1.0,minampl_sq=None,maxampl_sq=None,permin_ext=None):
 		
 		""" plot_cwtamplitude_squared generates the figure of the squared amplitude scalogram. It also generates the figure of the global squared amplitude scalogram. Only available if computes_amplitude is True (see 'timefreq_analysis').
 			Optional Inputs:
@@ -4373,8 +4588,11 @@ class Wavepal:
 			- reverse_xaxis=False: Reverse the horizontal axis if True
 			- reverse_yaxis=False: Reverse the vertical axis if True
 			- alpha_SNEZ=0.5: Transparency for the SNEZ. It must take a value between 0 (completely transparent) and 1 (completely opaque). Only used if shannonnyquistexclusionzone=False in the method 'timefreq_analysis'.
-			- decimals=3: Numbers of decimals for the colorbar scale ticks.
+			- decimals=3: Numbers of decimals for the colorbar scale ticks under the scientific notation (e.g. 1.567e-10).
 			- linewidth_ridges=1.0: Linewidth for the ridges
+			- minampl_sq=None: Fix the lower bound of the color scale. Default (None) takes the min value of the squared amplitude scalogram over the non-shaded area.
+			- maxampl_sq=None: Fix the higher bound of the color scale. Default (None) takes the max value of the squared amplitude scalogram over the non-shaded area.
+			- permin_ext=None: If a float value is given, the SNEZ is broaden towards this given period. Available only if shannonnyquistexclusionzone=True in the method 'timefreq_analysis'.
 			Outputs:
 			- plt: matplotlib.pyplot object that gives the user an access to the figure.
 				-> plt.show(): to draw the figure
@@ -4386,6 +4604,7 @@ class Wavepal:
 		
 		import matplotlib.pyplot as plt
 		import matplotlib.gridspec as gridspec
+		from copy import copy
 		
 		# check inputs
 		try:
@@ -4534,6 +4753,26 @@ class Wavepal:
 		except AssertionError:
 			print "Error at input 'decimals': must be an integer >=0"
 			return
+		try:
+			assert (type(linewidth_ridges) is int) or (type(linewidth_ridges) is float)
+		except AssertionError:
+			print "Error at input 'linewidth_ridges': must be an integer or float"
+			return
+		try:
+			assert (minampl_sq is None) or (type(minampl_sq) is float and minampl_sq>=0.)
+		except AssertionError:
+			print "Error at input 'minampl_sq': must be a float >=0"
+			return
+		try:
+			assert (maxampl_sq is None) or (type(maxampl_sq) is float and maxampl_sq>=0.)
+		except AssertionError:
+			print "Error at input 'maxampl_sq': must be a float, >=0, and >= 'minampl_sq'"
+			return
+		try:
+			assert (permin_ext is None) or (type(permin_ext) is float and permin_ext>=0.)
+		except AssertionError:
+			print "Error at input 'permin_ext': must be a float >=0"
+			return
 		# check that some functions were previously run
 		try:
 			assert self.run_timefreq_analysis is True
@@ -4552,8 +4791,14 @@ class Wavepal:
 				print "Error: Global scalogram was not computed"
 				print "=> drawing the figure without the global amplitude"
 				with_global_amplitude=False
+		if (self.shannonnyquistexclusionzone is False) and (permin_ext is not None):
+			print "parameter 'permin_ext' changed to 'None', since 'shannonnyquistexclusionzone' is 'False'"
+			permin_ext=None
 		if period_string is None:
-			myperiod=np.ceil(np.log2(self.period_ampl[0]))
+			if (permin_ext is not None) and (permin_ext<self.period_ampl[0]):
+				myperiod=np.ceil(np.log2(permin_ext))
+			else:
+				myperiod=np.ceil(np.log2(self.period_ampl[0]))
 			myperiod=2.**myperiod
 			period_string=[myperiod]
 			while True:
@@ -4565,10 +4810,29 @@ class Wavepal:
 			gs1 = gridspec.GridSpec(1,5)
 			gs1.update(left=0.05+left_padding)
 			plt.subplot(gs1[0,:-1])
+		if minampl_sq is None:
+			minampl_sq=self.minampl_sq
+		if maxampl_sq is None:
+			maxampl_sq=self.maxampl_sq
+		try:
+			assert maxampl_sq>=minampl_sq
+		except AssertionError:
+			print "Error: variable 'maxampl_sq' must be greater than or equal to 'minampl_sq'"
+			return
 		minminampl_sq=np.amin(np.amin(self.cwtamplitude**2))
 		maxmaxampl_sq=np.amax(np.amax(self.cwtamplitude**2))
-		mynlevels=int(float(nlevels)/(self.maxampl_sq-self.minampl_sq)*(maxmaxampl_sq-minminampl_sq))
-		mycontourf=plt.contourf(self.theta,np.log2(self.period_ampl),np.transpose(self.cwtamplitude**2),mynlevels,vmin=self.minampl_sq,vmax=self.maxampl_sq)
+		mycwtamplitude=copy(self.cwtamplitude**2)
+		if maxampl_sq<maxmaxampl_sq:
+			mycwtamplitude[mycwtamplitude>maxampl_sq]=maxampl_sq
+			myvmax=maxampl_sq
+		else:
+			myvmax=maxampl_sq
+		if minampl_sq>minminampl_sq:
+			mycwtamplitude[mycwtamplitude<minampl_sq]=minampl_sq
+			myvmin=minampl_sq
+		else:
+			myvmin=minampl_sq
+		mycontourf=plt.contourf(self.theta,np.log2(self.period_ampl),np.transpose(mycwtamplitude),nlevels,vmin=myvmin,vmax=myvmax,cmap=cmap)
 		if (self.run_timefreq_ridges_filtering is True) and (plot_ridges is True):
 			nsk=len(self.skeleton)
 			for k in range(nsk):
@@ -4578,7 +4842,7 @@ class Wavepal:
 					print "WARNING: Element "+str(k)+" of 'k_skeleton' is not a correct value"
 				else:
 					plt.plot(self.skeleton[k_skeleton[k]][0],np.log2(self.skeleton[k_skeleton[k]][1]),'k',linewidth=linewidth_ridges)
-		elif (self.run_timefreq_filtering is not True) and (plot_ridges is True):
+		elif (self.run_timefreq_ridges_filtering is not True) and (plot_ridges is True):
 			print "WARNING: function 'timefreq_ridges_filtering' was not run => unable to draw the ridges"
 		if (self.run_timefreq_band_filtering is True) and (plot_band_filtering is True):
 			for k in range(self.timefreq_band_filtered_signal_bounds.shape[0]):
@@ -4594,7 +4858,10 @@ class Wavepal:
 		plt.fill_betweenx(np.log2(self.period_ampl),self.theta[0],self.coi1_smooth,edgecolors=None,facecolor='black')
 		plt.fill_betweenx(np.log2(self.period_ampl),self.coi2_smooth,self.theta[-1],edgecolors=None,facecolor='black')
 		if self.shannonnyquistexclusionzone is True:
-			plt.fill_between(self.theta,np.log2(self.period_ampl[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_ampl),edgecolors=None,facecolor='black')
+			if (permin_ext is not None) and (permin_ext<self.period_ampl[0]):
+				plt.fill_between(self.theta,np.log2(permin_ext)*np.ones(self.theta.size),np.log2(self.perlim1_smooth_ampl),edgecolors=None,facecolor='black')
+			else:
+				plt.fill_between(self.theta,np.log2(self.period_ampl[0])*np.ones(self.theta.size),np.log2(self.perlim1_smooth_ampl),edgecolors=None,facecolor='black')
 			if plot_perlim2=="fill":
 				plt.fill_between(self.theta,np.log2(self.period_ampl[0])*np.ones(self.theta.size),np.log2(self.perlim2_smooth_scal),edgecolors=None,facecolor='black',alpha=0.5)
 			elif plot_perlim2=="line":
@@ -4613,7 +4880,10 @@ class Wavepal:
 		plt.xticks(fontsize=fontsize_ticks)
 		plt.yticks(np.log2(period_string), period_string, fontsize=fontsize_ticks)
 		plt.xlim([self.theta[0], self.theta[-1]])
-		plt.ylim([np.log2(self.period_ampl[0]), np.log2(self.period_ampl[-1])])
+		if (permin_ext is not None) and (permin_ext<self.period_ampl[0]):
+			plt.ylim([np.log2(permin_ext), np.log2(self.period_ampl[-1])])
+		else:
+			plt.ylim([np.log2(self.period_ampl[0]), np.log2(self.period_ampl[-1])])
 		plt.suptitle("Wavelet Squared Amplitude", fontsize=fontsize_title)
 		if reverse_yaxis is True:
 			plt.gca().invert_yaxis()
@@ -4629,7 +4899,10 @@ class Wavepal:
 				for k in range(len(dashed_periods)):
 					plt.plot(myrange,np.log2(dashed_periods[k])*np.ones(len(myrange)),'k--')
 			plt.yticks(np.log2(period_string),[])
-			plt.ylim([np.log2(self.period_ampl[0]), np.log2(self.period_ampl[-1])])
+			if (permin_ext is not None) and (permin_ext<self.period_ampl[0]):
+				plt.ylim([np.log2(permin_ext), np.log2(self.period_ampl[-1])])
+			else:
+				plt.ylim([np.log2(self.period_ampl[0]), np.log2(self.period_ampl[-1])])
 			plt.xlim([glob_ampl_min, glob_ampl_max])
 			plt.xlabel("Power"+self.power_label,fontsize=fontsize_axes)
 			ax=plt.gca()
@@ -4646,17 +4919,17 @@ class Wavepal:
 		cbar=plt.colorbar(mycontourf)
 		cbar.ax.set_ylabel("Power"+self.power_label,fontsize=fontsize_axes)
 		cbar.ax.tick_params(labelsize=fontsize_ticks)
-		cbar.set_clim(minminampl_sq,maxmaxampl_sq)
-		my_color_ticks=np.linspace(minminampl_sq,maxmaxampl_sq,10)
+		my_color_ticks=np.linspace(max(minampl_sq,minminampl_sq),min(maxampl_sq,maxmaxampl_sq),10)
 		cbar.set_ticks(my_color_ticks)
-		my_color_ticklabels=np.linspace(self.minampl_sq,self.maxampl_sq,10)
+		my_color_ticklabels=copy(my_color_ticks)
 		my_power_color_ticklabels=float(10**(int(np.floor(np.log10(my_color_ticklabels[-1])))))
 		my_color_ticklabels=[el/my_power_color_ticklabels for el in my_color_ticklabels]
 		my_color_ticklabels=np.around(my_color_ticklabels,decimals=decimals)
 		mystring=' '.join(str(e) for e in my_color_ticklabels).split(' ')
-		if ('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0]):
+		if minampl_sq>minminampl_sq and (('1' in mystring[0]) or ('2' in mystring[0]) or ('3' in mystring[0]) or ('4' in mystring[0]) or ('5' in mystring[0]) or ('6' in mystring[0]) or ('7' in mystring[0]) or ('8' in mystring[0]) or ('9' in mystring[0])):
 			mystring[0]="<="+mystring[0]
-		mystring[-1]=">="+mystring[-1]
+		if maxampl_sq<maxmaxampl_sq:
+			mystring[-1]=">="+mystring[-1]
 		cbar.set_ticklabels(mystring)
 		if int(np.log10(my_power_color_ticklabels))!=0:
 			cbar.ax.set_title('1e'+str(int(np.log10(my_power_color_ticklabels))),fontsize=fontsize_ticks)
@@ -4731,9 +5004,9 @@ class Wavepal:
 		for k in range(self.percentile_cwt.size):
 			if 'n' in self.signif_level_type:
 				if loglog is False:
-					plt.plot(self.period_cwt**mypow,self.global_scalogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile_cwt[k])+"%"+" (from distr. param.)",linewidth=linewidth_gcl)
+					plt.plot(self.period_cwt**mypow,self.global_scalogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile_cwt[k])+"%"+" (from stoch. param.)",linewidth=linewidth_gcl)
 				elif loglog is True:
-					plt.loglog(self.period_cwt**mypow,self.global_scalogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile_cwt[k])+"%"+" (from distr. param.)",linewidth=linewidth_gcl)
+					plt.loglog(self.period_cwt**mypow,self.global_scalogram_cl_mcmc[:,k],label="MCMC CL at "+str(self.percentile_cwt[k])+"%"+" (from stoch. param.)",linewidth=linewidth_gcl)
 			if 'a' in self.signif_level_type:
 				if self.p==0:
 					if loglog is False:
