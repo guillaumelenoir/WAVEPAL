@@ -12,7 +12,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     # Metadata
     name='WAVEPAL',
-    version='3.3',
+    version='3.6',
     author='Guillaume Lenoir',
     author_email='guillaume.lenoir@hotmail.com',
     url='http://www.climate.be/u/lenoir',
