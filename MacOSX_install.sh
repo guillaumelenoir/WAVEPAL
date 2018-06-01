@@ -14,10 +14,16 @@ sudo port install py27-numpy
 sudo port install py27-scipy
 sudo port install py27-matplotlib
 sudo port install py27-acor
-sudo port install boost +python27
 sudo port install armadillo
 sudo port install py27-tqdm
 ############################
+
+### install an old version of boost (recent versions not compatible with carma pack)
+git clone --single-branch https://github.com/macports/macports-ports.git
+cd macports-ports
+git checkout c834ef30b9e47f91c26e6463f6eccb3b1954928b
+cd devel/boost
+sudo port install +python27
 
 echo "Install carma_pack"
 git clone https://github.com/brandonckelly/carma_pack.git
