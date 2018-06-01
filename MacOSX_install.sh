@@ -9,7 +9,7 @@ type port >/dev/null 2>&1 || { echo >&2 "I require port but it's not installed. 
 # MacOS 10.12 Sierra
 sudo port install python27
 type xcodebuild >/dev/null 2>&1 || { echo >&2 "I require xcodebuild but it's not installed.  Aborting."; exit 1; }
-sudo port install py27-readline
+sudo port install py27-gnureadline
 sudo port install py27-numpy
 sudo port install py27-scipy
 sudo port install py27-matplotlib
