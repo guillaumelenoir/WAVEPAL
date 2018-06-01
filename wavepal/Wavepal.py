@@ -191,7 +191,7 @@ class Wavepal:
 		self.timefreq_band_filtered_signal=None
 		self.timefreq_band_filtered_signal_bounds=None
 		self.run_timefreq_band_filtering=False
-
+		
 
 
 	def check_data(self):
