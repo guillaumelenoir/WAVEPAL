@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mypath=$(pwd)
+
 ### NEED MACPORTS
 # https://www.macports.org/install.php
 
@@ -19,12 +21,16 @@ sudo port install py27-tqdm
 ############################
 
 ### install an old version of boost (recent versions not compatible with carma pack)
-git clone --single-branch https://github.com/macports/macports-ports.git
-cd macports-ports
-git checkout c834ef30b9e47f91c26e6463f6eccb3b1954928b
+cd /opt/local    # it seems it does not work if it is run in $mypath
+sudo git clone --single-branch https://github.com/macports/macports-ports.git macports-ports_temp_wavepal
+cd macports-ports_temp_wavepal
+sudo git checkout fb1a595a492c02cc70476aa71db416d20397d71c   # go back to the commit of version 1.59
 cd devel/boost
 sudo port install +python27
+cd ../../..
+sudo rm -r macports-ports_temp_wavepal
 
+cd $mypath
 echo "Install carma_pack"
 git clone https://github.com/brandonckelly/carma_pack.git
 rsync -av --delete carmcmc carma_pack/src
